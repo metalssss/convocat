@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#E7E3D9;font-family:Archivo,system-ui,sans-serif;color:#151515}a{color:#151515;text-decoration:none}a:hover{color:#C8342B}input::placeholder{color:#A39E92}*::-webkit-scrollbar{display:none}@keyframes spin{to{transform:rotate(360deg)}}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-wrap:wrap;gap:56px;align-items:center;justify-content:center;padding:48px 32px;box-sizing:border-box">
+  <div style="max-width:300px;display:flex;flex-direction:column;gap:18px">
+    <div style="font:800 56px/0.9 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:-0.01em">Convocat</div>
+    <div style="font:400 15px/1.5 Archivo,sans-serif;color:#5E5A51;text-wrap:pretty">Toda la FCF en tu móvil: tus equipos, cualquier rival, clasificaciones, actas y estadísticas. Se sincroniza sola y te avisa si cambia un horario.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font:500 13px/1.45 Archivo,sans-serif;color:#3B3832;border-top:1px solid #CFCABD;padding-top:16px">
+      <div>① Espera unos segundos en Inicio: llega un cambio de horario de la FCF.</div>
+      <div>② Pulsa ↻ para forzar otra sincronización.</div>
+      <div>③ En <b>Explorar</b> busca «sant ignasi» para ver todos los equipos del club y añadirlos de golpe.</div>
+      <div>④ Toca cualquier equipo de una clasificación para ver sus estadísticas.</div>
+    </div>
+    <div style="font:500 12px/1.45 Archivo,sans-serif;color:#8A857A">Datos simulados · temporada 2026‑27. En Tweaks puedes mover la fecha a diciembre o marzo para ver estadísticas con más jornadas.</div>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+  <div style="height:100%;position:relative;background:#F3F1EA;display:flex;flex-direction:column;font-family:Archivo,sans-serif;color:#151515">
+    <div ref="{{ scrollRef }}" style="flex:1;overflow-y:auto;padding:58px 0 110px">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="padding:6px 20px 0;display:flex;justify-content:space-between;align-items:flex-end">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#8A857A">{{ todayLabel }}</div>
+              <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Tu semana</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ goNotifs }}" style="width:44px;height:44px;border-radius:22px;border:none;background:#E7E3D9;color:#151515;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                <sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:6px;right:6px;min-width:16px;height:16px;border-radius:8px;background:#C8342B;color:#fff;font:700 10px/16px Archivo,sans-serif;text-align:center">{{ unreadCount }}</span></sc-if>
+              </button>
+              <button onClick="{{ goAdd }}" style="width:44px;height:44px;border-radius:22px;border:none;background:#151515;color:#fff;font:400 26px/1 Archivo,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#C8342B">+</button>
+            </div>
+          </div>
+
+          <div onClick="{{ refresh }}" style="margin:-8px 20px 0;display:flex;align-items:center;gap:8px;font:500 12px Archivo,sans-serif;color:#77736A;cursor:pointer">
+            <span style="width:7px;height:7px;border-radius:4px;background:{{ syncDot }}"></span>
+            <span>{{ syncLabel }}</span>
+            <span style="display:inline-block;font:700 14px Archivo,sans-serif;color:#151515;animation:{{ spinAnim }}">↻</span>
+          </div>
+
+          <sc-if value="{{ next }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:0 16px">
+            <div onClick="{{ next.open }}" style="background:#151515;color:#fff;border-radius:22px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:18px;cursor:pointer;position:relative;overflow:hidden">
+              <div style="position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:80px;border:1px solid rgba(255,255,255,0.08)"></div>
+              <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.07)"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;position:relative">
+                <div style="display:flex;align-items:center;gap:8px;font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#CFCABD">
+                  <span style="width:8px;height:8px;border-radius:4px;background:{{ next.color }}"></span>{{ next.teamName }} · {{ next.comp }}
+                </div>
+                <div style="font:700 13px 'Barlow Condensed',sans-serif;letter-spacing:0.06em;color:#8A857A">J{{ next.j }}</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;position:relative">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+                  <div style="width:52px;height:52px;border-radius:14px;background:{{ next.hBg }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 20px 'Barlow Condensed',sans-serif">{{ next.hShort }}</div>
+                  <div style="font:600 13px/1.2 Archivo,sans-serif">{{ next.home }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+                  <div style="font:800 46px/1 'Barlow Condensed',sans-serif;letter-spacing:-0.01em">{{ next.time }}</div>
+                  <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A">{{ next.dateShort }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+                  <div style="width:52px;height:52px;border-radius:14px;background:{{ next.aBg }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 20px 'Barlow Condensed',sans-serif">{{ next.aShort }}</div>
+                  <div style="font:600 13px/1.2 Archivo,sans-serif">{{ next.away }}</div>
+                </div>
+              </div>
+              <sc-if value="{{ next.changed }}" hint-placeholder-val="{{ false }}">
+                <div style="position:relative;align-self:center;background:#F2C84B;color:#151515;border-radius:10px;padding:5px 10px;font:700 12px Archivo,sans-serif">Horario actualizado por la FCF · antes {{ next.oldLabel }}</div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:4px;position:relative;border-top:1px solid rgba(255,255,255,0.12);padding-top:14px">
+                <div style="display:flex;justify-content:space-between;gap:10px;font:600 14px Archivo,sans-serif"><span>{{ next.venue }}</span><span style="color:#F2C84B;flex:none">{{ next.inDays }}</span></div>
+                <div style="font:400 13px Archivo,sans-serif;color:#A39E92">Convocatoria {{ next.callTime }} · {{ next.surface }}</div>
+              </div>
+              <div style="display:flex;gap:8px;position:relative">
+                <div style="flex:1;height:44px;border-radius:12px;background:{{ next.attBg }};color:{{ next.attFg }};display:flex;align-items:center;justify-content:center;font:600 14px Archivo,sans-serif">{{ next.attLabel }}</div>
+                <a href="{{ next.mapUrl }}" target="_blank" onClick="{{ stop }}" style="flex:1;height:44px;border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;font:600 14px Archivo,sans-serif">Cómo llegar ↗</a>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ conflict }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ conflict.open }}" style="margin:0 16px;padding:14px 16px;border-radius:16px;background:#F2C84B;display:flex;gap:12px;align-items:center;cursor:pointer">
+              <div style="font:800 26px/1 'Barlow Condensed',sans-serif">!</div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font:700 14px Archivo,sans-serif">Doble partido el {{ conflict.day }}</div>
+                <div style="font:400 13px/1.35 Archivo,sans-serif;color:#3B3218">{{ conflict.text }}</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ me.has }}" hint-placeholder-val="{{ true }}">
+            <div onClick="{{ me.open }}" style="margin:0 16px;background:#fff;border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer">
+              <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+                <div style="font:700 15px Archivo,sans-serif">Tus números</div>
+                <div style="font:400 12px Archivo,sans-serif;color:#77736A">Temporada 2026‑27 · según actas</div>
+              </div>
+              <sc-for list="{{ me.stats }}" as="s" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;align-items:center;min-width:40px">
+                  <div style="font:800 26px/1 'Barlow Condensed',sans-serif">{{ s.v }}</div>
+                  <div style="font:600 10px Archivo,sans-serif;letter-spacing:0.06em;text-transform:uppercase;color:#8A857A">{{ s.k }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px">
+              <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em">Próximos</div>
+              <div onClick="{{ tabAgenda }}" style="font:600 13px Archivo,sans-serif;color:#77736A;cursor:pointer">Calendario →</div>
+            </div>
+            <div style="background:#fff;border-radius:18px;overflow:hidden">
+              <sc-for list="{{ upcoming }}" as="m" hint-placeholder-count="4">
+                <div onClick="{{ m.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                  <div style="width:44px;display:flex;flex-direction:column;align-items:center;flex:none">
+                    <div style="font:600 10px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A">{{ m.dow }}</div>
+                    <div style="font:800 24px/1 'Barlow Condensed',sans-serif">{{ m.dnum }}</div>
+                  </div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.vsLabel }}</div>
+                    <div style="display:flex;align-items:center;gap:6px;font:400 12px Archivo,sans-serif;color:#77736A"><span style="width:7px;height:7px;border-radius:4px;background:{{ m.color }}"></span>{{ m.teamName }} · {{ m.side }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+                    <div style="font:700 18px 'Barlow Condensed',sans-serif">{{ m.time }}</div>
+                    <sc-if value="{{ m.changed }}" hint-placeholder-val="{{ false }}"><div style="font:700 10px Archivo,sans-serif;background:#F2C84B;border-radius:6px;padding:2px 5px">Nuevo horario</div></sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px">
+            <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em;padding:0 4px">Últimos resultados</div>
+            <div style="display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px">
+              <sc-for list="{{ recent }}" as="m" hint-placeholder-count="3">
+                <div onClick="{{ m.open }}" style="flex:none;width:150px;background:#fff;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;cursor:pointer">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="font:600 11px Archivo,sans-serif;color:#8A857A">{{ m.dateShort }}</div>
+                    <div style="width:22px;height:22px;border-radius:6px;background:{{ m.resBg }};color:#fff;font:700 13px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ m.res }}</div>
+                  </div>
+                  <div style="font:800 32px/1 'Barlow Condensed',sans-serif">{{ m.score }}</div>
+                  <div style="font:500 12px/1.3 Archivo,sans-serif;color:#3B3832">{{ m.vsLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:6px;font:400 11px Archivo,sans-serif;color:#77736A"><span style="width:7px;height:7px;border-radius:4px;background:{{ m.color }}"></span>{{ m.teamName }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isNotifs }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;padding:6px 16px 0">
+          <button onClick="{{ back }}" style="align-self:flex-start;height:36px;padding:0 14px;border-radius:18px;border:none;background:#E7E3D9;color:#151515;font:600 13px Archivo,sans-serif;cursor:pointer">← Atrás</button>
+          <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase;padding:0 4px">Avisos</div>
+          <div style="background:#fff;border-radius:18px;overflow:hidden">
+            <sc-for list="{{ notifList }}" as="n" hint-placeholder-count="4">
+              <div onClick="{{ n.open }}" style="display:flex;gap:12px;padding:14px;border-bottom:1px solid #EFECE4;cursor:pointer;background:{{ n.bg }}">
+                <div style="width:36px;height:36px;border-radius:10px;background:{{ n.iconBg }};color:{{ n.iconFg }};display:flex;align-items:center;justify-content:center;font:800 16px 'Barlow Condensed',sans-serif;flex:none">{{ n.icon }}</div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <div style="display:flex;justify-content:space-between;gap:8px"><div style="font:700 14px Archivo,sans-serif">{{ n.title }}</div><div style="font:500 11px Archivo,sans-serif;color:#8A857A;flex:none">{{ n.when }}</div></div>
+                  <div style="font:400 13px/1.4 Archivo,sans-serif;color:#3B3832">{{ n.text }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;padding:4px 4px 0">Avisarme de</div>
+          <div style="background:#fff;border-radius:18px;overflow:hidden">
+            <sc-for list="{{ prefRows }}" as="p" hint-placeholder-count="4">
+              <div onClick="{{ p.toggle }}" style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid #EFECE4;cursor:pointer">
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font:600 14px Archivo,sans-serif">{{ p.label }}</div><div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ p.sub }}</div></div>
+                <div style="width:46px;height:28px;border-radius:14px;background:{{ p.track }};padding:3px;box-sizing:border-box;display:flex;justify-content:{{ p.justify }};transition:background 0.2s"><div style="width:22px;height:22px;border-radius:11px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTeams }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px;padding:6px 16px 0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 4px">
+            <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Mis equipos</div>
+            <div style="font:600 13px Archivo,sans-serif;color:#77736A">{{ teamCount }}</div>
+          </div>
+          <sc-for list="{{ teamCards }}" as="t" hint-placeholder-count="2">
+            <div onClick="{{ t.open }}" style="background:#fff;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:14px;cursor:pointer" style-hover="box-shadow:0 6px 20px rgba(0,0,0,0.06)">
+              <div style="display:flex;gap:12px;align-items:center">
+                <div style="width:48px;height:48px;border-radius:14px;background:{{ t.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 20px 'Barlow Condensed',sans-serif;flex:none">{{ t.short }}</div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <div style="font:700 16px Archivo,sans-serif">{{ t.name }}</div>
+                  <div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ t.div }} · {{ t.group }} · {{ t.mod }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end">
+                  <div style="font:800 34px/0.9 'Barlow Condensed',sans-serif">{{ t.pos }}º</div>
+                  <div style="font:600 11px Archivo,sans-serif;color:#8A857A">{{ t.pts }} pts</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #EFECE4;padding-top:12px;gap:8px">
+                <div style="display:flex;gap:4px">
+                  <sc-for list="{{ t.form }}" as="f" hint-placeholder-count="3">
+                    <div style="width:22px;height:22px;border-radius:6px;background:{{ f.bg }};color:#fff;font:700 13px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ f.r }}</div>
+                  </sc-for>
+                </div>
+                <div style="font:500 12px Archivo,sans-serif;color:#3B3832;text-align:right">{{ t.nextLabel }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div onClick="{{ tabExplore }}" style="border:1.5px dashed #BDB7A9;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;color:#5E5A51" style-hover="border-color:#151515;color:#151515">
+              <div style="font:700 14px Archivo,sans-serif">Buscar equipo</div><div style="font:400 12px Archivo,sans-serif">Cualquier equipo de la FCF</div>
+            </div>
+            <div onClick="{{ goAdd }}" style="border:1.5px dashed #BDB7A9;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;color:#5E5A51" style-hover="border-color:#151515;color:#151515">
+              <div style="font:700 14px Archivo,sans-serif">Pegar enlace</div><div style="font:400 12px Archivo,sans-serif">Desde fcf.cat</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isExplore }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px;padding:6px 16px 0">
+          <div style="display:flex;flex-direction:column;gap:4px;padding:0 4px">
+            <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Explorar</div>
+            <div style="font:400 13px Archivo,sans-serif;color:#77736A">{{ dirCount }} equipos · {{ compCount }} grupos de la FCF</div>
+          </div>
+          <div style="background:#fff;border-radius:16px;padding:0 14px;display:flex;align-items:center;gap:10px;border:1.5px solid #151515">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#77736A" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Equipo, club, pueblo o categoría" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font:500 15px Archivo,sans-serif;color:#151515;height:50px">
+            <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}"><button onClick="{{ clearQuery }}" style="border:none;background:#E7E3D9;width:24px;height:24px;border-radius:12px;cursor:pointer;font:600 12px Archivo,sans-serif;color:#151515">✕</button></sc-if>
+          </div>
+          <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="6">
+              <button onClick="{{ c.pick }}" style="flex:none;height:34px;padding:0 12px;border-radius:17px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};font:600 13px Archivo,sans-serif;cursor:pointer">{{ c.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ searchNone }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:22px;text-align:center;font:500 14px Archivo,sans-serif;color:#8A857A;background:#fff;border-radius:18px">Nada coincide con «{{ query }}».</div>
+            </sc-if>
+            <sc-for list="{{ clubResults }}" as="cl" hint-placeholder-count="0">
+              <div style="background:#fff;border-radius:20px;overflow:hidden">
+                <div style="padding:14px;display:flex;gap:12px;align-items:center">
+                  <div style="width:48px;height:48px;border-radius:14px;background:{{ cl.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 20px 'Barlow Condensed',sans-serif;flex:none">{{ cl.short }}</div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#8A857A">Club</div><div style="font:700 17px Archivo,sans-serif">{{ cl.name }}</div><div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ cl.sub }}</div></div>
+                </div>
+                <div style="padding:0 14px 12px"><button onClick="{{ cl.followAll }}" style="width:100%;height:44px;border-radius:12px;border:none;background:{{ cl.followBg }};color:{{ cl.followFg }};font:700 14px Archivo,sans-serif;cursor:pointer">{{ cl.followLabel }}</button></div>
+                <sc-for list="{{ cl.teams }}" as="t" hint-placeholder-count="6">
+                  <div onClick="{{ t.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-top:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                    <div style="display:flex;flex-direction:column;gap:1px;min-width:0"><div style="font:600 14px Archivo,sans-serif">{{ t.name }}</div><div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ t.sub }}</div></div>
+                    <sc-if value="{{ t.mine }}" hint-placeholder-val="{{ false }}"><div style="font:700 10px Archivo,sans-serif;padding:3px 6px;border-radius:6px;background:#151515;color:#fff;flex:none">MÍO</div></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <sc-if value="{{ hasCompResults }}" hint-placeholder-val="{{ false }}">
+              <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#8A857A;padding:0 4px">Competiciones</div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <sc-for list="{{ compResults }}" as="c" hint-placeholder-count="2">
+                  <div onClick="{{ c.open }}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                    <div style="display:flex;flex-direction:column;gap:2px"><div style="font:600 14px Archivo,sans-serif">{{ c.name }}</div><div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ c.sub }}</div></div>
+                    <div style="color:#8A857A">→</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasTeamResults }}" hint-placeholder-val="{{ false }}">
+              <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#8A857A;padding:0 4px">{{ resultCount }}</div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <sc-for list="{{ teamResults }}" as="r" hint-placeholder-count="5">
+                  <div onClick="{{ r.open }}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                    <div style="width:38px;height:38px;border-radius:11px;background:{{ r.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 15px 'Barlow Condensed',sans-serif;flex:none">{{ r.short }}</div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                      <div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                      <div style="font:400 12px Archivo,sans-serif;color:#77736A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</div>
+                    </div>
+                    <sc-if value="{{ r.mine }}" hint-placeholder-val="{{ false }}"><div style="font:700 10px Archivo,sans-serif;padding:3px 6px;border-radius:6px;background:#151515;color:#fff">MÍO</div></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ showBrowse }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ browse }}" as="sec" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;padding:0 4px">{{ sec.title }}</div>
+                <div style="background:#fff;border-radius:18px;overflow:hidden">
+                  <sc-for list="{{ sec.comps }}" as="c" hint-placeholder-count="3">
+                    <div onClick="{{ c.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                      <div style="display:flex;flex-direction:column;gap:2px"><div style="font:600 14px Archivo,sans-serif">{{ c.name }}</div><div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ c.sub }}</div></div>
+                      <sc-if value="{{ c.mine }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:4px;background:{{ c.mineColor }};flex:none"></span></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTeam }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:-58px">
+          <div style="background:{{ T.color }};color:#fff;padding:62px 20px 20px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden">
+            <div style="position:absolute;right:-20px;bottom:-60px;font:800 180px/1 'Barlow Condensed',sans-serif;color:rgba(255,255,255,0.1)">{{ T.short }}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;position:relative">
+              <button onClick="{{ back }}" style="height:36px;padding:0 14px;border-radius:18px;border:none;background:rgba(255,255,255,0.18);color:#fff;font:600 13px Archivo,sans-serif;cursor:pointer">← Atrás</button>
+              <button onClick="{{ T.toggleFollow }}" style="height:36px;padding:0 14px;border-radius:18px;border:none;background:{{ T.followBg }};color:{{ T.followFg }};font:700 13px Archivo,sans-serif;cursor:pointer">{{ T.followLabel }}</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;position:relative">
+              <div onClick="{{ T.openComp }}" style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;opacity:0.85;cursor:pointer">{{ T.div }} · {{ T.group }} →</div>
+              <div style="font:800 40px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">{{ T.name }}</div>
+              <div style="font:500 13px Archivo,sans-serif;opacity:0.85">{{ T.venue }} · {{ T.homeLabel }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative">
+              <sc-for list="{{ T.head }}" as="s" hint-placeholder-count="4">
+                <div style="background:rgba(0,0,0,0.16);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column">
+                  <div style="font:800 26px/1 'Barlow Condensed',sans-serif">{{ s.v }}</div>
+                  <div style="font:600 10px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;opacity:0.8">{{ s.k }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="margin:0 16px;background:#E7E3D9;border-radius:14px;padding:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
+            <sc-for list="{{ teamTabs }}" as="tb" hint-placeholder-count="3">
+              <button onClick="{{ tb.pick }}" style="height:38px;border:none;border-radius:10px;background:{{ tb.bg }};font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">{{ tb.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ tResumen }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:14px;padding:0 16px">
+              <sc-if value="{{ T.noData }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:20px;text-align:center;font:500 14px/1.45 Archivo,sans-serif;color:#8A857A;background:#fff;border-radius:18px">La liga aún no ha empezado. Las estadísticas aparecerán tras la primera jornada.</div>
+              </sc-if>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <sc-for list="{{ T.tiles }}" as="s" hint-placeholder-count="6">
+                  <div style="background:#fff;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:4px">
+                    <div style="font:800 28px/1 'Barlow Condensed',sans-serif">{{ s.v }}</div>
+                    <div style="font:500 11px/1.25 Archivo,sans-serif;color:#77736A">{{ s.k }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;justify-content:space-between;align-items:center"><div style="font:700 14px Archivo,sans-serif">Forma</div><div style="font:500 12px Archivo,sans-serif;color:#77736A">{{ T.streak }}</div></div>
+                <div style="display:flex;gap:6px">
+                  <sc-for list="{{ T.form }}" as="f" hint-placeholder-count="5">
+                    <div onClick="{{ f.open }}" style="flex:1;height:44px;border-radius:10px;background:{{ f.bg }};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer">
+                      <div style="font:800 16px/1 'Barlow Condensed',sans-serif">{{ f.score }}</div>
+                      <div style="font:600 9px Archivo,sans-serif;opacity:0.85">{{ f.opp }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="background:#fff;border-radius:18px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <sc-for list="{{ T.split }}" as="h" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A">{{ h.k }}</div>
+                    <div style="font:800 30px/1 'Barlow Condensed',sans-serif">{{ h.pts }} <span style="font:600 12px Archivo,sans-serif;color:#77736A">pts</span></div>
+                    <div style="font:500 12px Archivo,sans-serif;color:#3B3832">{{ h.rec }} · goles {{ h.goals }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ T.hasChart }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;justify-content:space-between"><div style="font:700 14px Archivo,sans-serif">Posición por jornada</div><div style="font:500 12px Archivo,sans-serif;color:#77736A">{{ T.chartNote }}</div></div>
+                  <div style="display:flex;gap:6px">
+                    <div style="display:flex;flex-direction:column;justify-content:space-between;font:600 10px Archivo,sans-serif;color:#8A857A;padding:2px 0"><span>1º</span><span>{{ T.nTeams }}º</span></div>
+                    <svg viewBox="0 0 300 90" preserveAspectRatio="none" style="flex:1;height:90px;overflow:visible">
+                      <line x1="0" y1="6" x2="300" y2="6" stroke="#EFECE4"></line><line x1="0" y1="45" x2="300" y2="45" stroke="#EFECE4"></line><line x1="0" y1="84" x2="300" y2="84" stroke="#EFECE4"></line>
+                      <polyline points="{{ T.chartPts }}" fill="none" stroke="{{ T.color }}" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+                    </svg>
+                  </div>
+                </div>
+              </sc-if>
+              <div style="background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;justify-content:space-between;align-items:center"><div style="font:700 14px Archivo,sans-serif">Goles por tramo</div>
+                  <div style="display:flex;gap:10px;font:500 11px Archivo,sans-serif;color:#77736A"><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:{{ T.color }}"></span>A favor</span><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#CFCABD"></span>En contra</span></div></div>
+                <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:90px">
+                  <sc-for list="{{ T.buckets }}" as="b" hint-placeholder-count="6">
+                    <div style="display:flex;gap:2px;align-items:flex-end;height:100%;justify-content:center">
+                      <div style="width:40%;height:{{ b.fh }};min-height:2px;background:{{ T.color }};border-radius:3px 3px 0 0"></div>
+                      <div style="width:40%;height:{{ b.ch }};min-height:2px;background:#CFCABD;border-radius:3px 3px 0 0"></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+                  <sc-for list="{{ T.buckets }}" as="b" hint-placeholder-count="6"><div style="text-align:center;font:500 10px Archivo,sans-serif;color:#8A857A">{{ b.label }}</div></sc-for>
+                </div>
+              </div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <div style="padding:14px 14px 6px;font:700 14px Archivo,sans-serif">Máximos goleadores</div>
+                <sc-for list="{{ T.scorers }}" as="p" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #EFECE4;background:{{ p.bg }}">
+                    <div style="width:26px;font:800 18px 'Barlow Condensed',sans-serif;color:#8A857A">{{ p.dorsal }}</div>
+                    <div style="flex:1;font:600 14px Archivo,sans-serif">{{ p.name }}</div>
+                    <div style="font:500 12px Archivo,sans-serif;color:#77736A">{{ p.pj }} PJ</div>
+                    <div style="font:800 22px 'Barlow Condensed',sans-serif;min-width:24px;text-align:right">{{ p.g }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tPartidos }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden">
+              <sc-for list="{{ T.matches }}" as="m" hint-placeholder-count="8">
+                <div onClick="{{ m.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                  <div style="width:30px;font:700 13px 'Barlow Condensed',sans-serif;color:#8A857A;flex:none">J{{ m.j }}</div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.vsLabel }}</div>
+                    <div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ m.dateShort }} · {{ m.side }}</div>
+                  </div>
+                  <sc-if value="{{ m.played }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="font:800 20px 'Barlow Condensed',sans-serif">{{ m.score }}</div>
+                      <div style="width:22px;height:22px;border-radius:6px;background:{{ m.resBg }};color:#fff;font:700 13px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ m.res }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.pending }}" hint-placeholder-val="{{ true }}">
+                    <div style="font:700 17px 'Barlow Condensed',sans-serif;padding:3px 8px;border-radius:8px;background:{{ m.timeBg }}">{{ m.time }}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tPlantilla }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:28px 1fr 34px 30px 30px 30px;gap:6px;padding:10px 14px;font:600 10px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A"><div>#</div><div>Jugador</div><div>Pos</div><div style="text-align:right">PJ</div><div style="text-align:right">G</div><div style="text-align:right">TA</div></div>
+              <sc-for list="{{ T.roster }}" as="p" hint-placeholder-count="12">
+                <div style="display:grid;grid-template-columns:28px 1fr 34px 30px 30px 30px;gap:6px;padding:10px 14px;border-top:1px solid #EFECE4;align-items:center;background:{{ p.bg }};font:{{ p.weight }} 14px Archivo,sans-serif">
+                  <div style="font:800 16px 'Barlow Condensed',sans-serif;color:#8A857A">{{ p.dorsal }}</div>
+                  <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                  <div style="font:600 11px Archivo,sans-serif;color:#77736A">{{ p.pos }}</div>
+                  <div style="text-align:right;color:#77736A">{{ p.pj }}</div>
+                  <div style="text-align:right;font:800 17px 'Barlow Condensed',sans-serif">{{ p.g }}</div>
+                  <div style="text-align:right;color:#77736A">{{ p.yc }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isComp }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:-58px">
+          <div style="background:#151515;color:#fff;padding:62px 20px 20px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <button onClick="{{ back }}" style="height:36px;padding:0 14px;border-radius:18px;border:none;background:rgba(255,255,255,0.12);color:#fff;font:600 13px Archivo,sans-serif;cursor:pointer">← Atrás</button>
+              <a href="{{ C.url }}" target="_blank" style="font:500 12px Archivo,sans-serif;color:#A39E92">fcf.cat ↗</a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#A39E92">{{ C.mod }} · {{ C.cat }} · 2026‑27</div>
+              <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">{{ C.div }}</div>
+              <div style="font:600 15px Archivo,sans-serif;color:#CFCABD">{{ C.group }} · {{ C.nTeams }} equipos · jornada {{ C.curJ }} de {{ C.nRounds }}</div>
+            </div>
+          </div>
+          <div style="margin:0 16px;background:#E7E3D9;border-radius:14px;padding:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
+            <sc-for list="{{ compTabs }}" as="tb" hint-placeholder-count="3">
+              <button onClick="{{ tb.pick }}" style="height:38px;border:none;border-radius:10px;background:{{ tb.bg }};font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">{{ tb.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ cTabla }}" hint-placeholder-val="{{ true }}">
+            <div style="margin:0 16px;display:flex;gap:6px">
+              <sc-for list="{{ tableModes }}" as="tm" hint-placeholder-count="3">
+                <button onClick="{{ tm.pick }}" style="height:32px;padding:0 12px;border-radius:16px;border:1px solid {{ tm.border }};background:{{ tm.bg }};color:{{ tm.fg }};font:600 12px Archivo,sans-serif;cursor:pointer">{{ tm.label }}</button>
+              </sc-for>
+            </div>
+            <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden;padding-bottom:6px">
+              <div style="display:grid;grid-template-columns:22px minmax(0,1fr) 22px 22px 22px 22px 30px 30px;gap:4px;padding:10px 12px;font:600 10px Archivo,sans-serif;letter-spacing:0.06em;text-transform:uppercase;color:#8A857A"><div>#</div><div>Equipo</div><div style="text-align:right">PJ</div><div style="text-align:right">V</div><div style="text-align:right">E</div><div style="text-align:right">D</div><div style="text-align:right">DG</div><div style="text-align:right">Pts</div></div>
+              <sc-for list="{{ C.rows }}" as="r" hint-placeholder-count="16">
+                <div onClick="{{ r.open }}" style="display:grid;grid-template-columns:22px minmax(0,1fr) 22px 22px 22px 22px 30px 30px;gap:4px;padding:9px 12px;background:{{ r.bg }};font:{{ r.weight }} 13px Archivo,sans-serif;align-items:center;cursor:pointer;box-shadow:inset 3px 0 0 {{ r.zone }}" style-hover="background:#FAF8F3">
+                  <div style="font:700 15px 'Barlow Condensed',sans-serif">{{ r.pos }}</div>
+                  <div style="display:flex;align-items:center;gap:6px;min-width:0"><span style="width:8px;height:8px;border-radius:2px;background:{{ r.color }};flex:none"></span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span></div>
+                  <div style="text-align:right;color:#77736A">{{ r.pj }}</div>
+                  <div style="text-align:right;color:#77736A">{{ r.v }}</div>
+                  <div style="text-align:right;color:#77736A">{{ r.e }}</div>
+                  <div style="text-align:right;color:#77736A">{{ r.d }}</div>
+                  <div style="text-align:right;color:#77736A">{{ r.dg }}</div>
+                  <div style="text-align:right;font:800 16px 'Barlow Condensed',sans-serif">{{ r.pts }}</div>
+                </div>
+              </sc-for>
+              <div style="display:flex;gap:14px;padding:10px 12px 4px;font:500 11px Archivo,sans-serif;color:#77736A"><span style="display:flex;align-items:center;gap:5px"><span style="width:3px;height:12px;background:#1F8A4C"></span>Ascenso</span><span style="display:flex;align-items:center;gap:5px"><span style="width:3px;height:12px;background:#D0402E"></span>Descenso</span></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ cJornadas }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:0 16px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;padding:6px">
+              <button onClick="{{ C.prevRound }}" style="width:40px;height:40px;border-radius:10px;border:none;background:#F3F1EA;cursor:pointer;font:600 16px Archivo,sans-serif;color:#151515">←</button>
+              <div style="display:flex;flex-direction:column;align-items:center"><div style="font:800 22px/1 'Barlow Condensed',sans-serif">Jornada {{ C.roundJ }}</div><div style="font:500 12px Archivo,sans-serif;color:#77736A">{{ C.roundDate }}</div></div>
+              <button onClick="{{ C.nextRound }}" style="width:40px;height:40px;border-radius:10px;border:none;background:#F3F1EA;cursor:pointer;font:600 16px Archivo,sans-serif;color:#151515">→</button>
+            </div>
+            <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden">
+              <sc-for list="{{ C.roundMatches }}" as="m" hint-placeholder-count="8">
+                <div onClick="{{ m.open }}" style="display:grid;grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr);gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer;background:{{ m.rowBg }}" style-hover="background:#FAF8F3">
+                  <div style="text-align:right;font:600 13px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.home }}</div>
+                  <div style="text-align:center;font:800 18px 'Barlow Condensed',sans-serif;background:#F3F1EA;border-radius:8px;padding:3px 0">{{ m.center }}</div>
+                  <div style="font:600 13px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.away }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ cStats }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px;padding:0 16px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <sc-for list="{{ C.avgs }}" as="s" hint-placeholder-count="4">
+                  <div style="background:#fff;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:4px">
+                    <div style="font:800 28px/1 'Barlow Condensed',sans-serif">{{ s.v }}</div>
+                    <div style="font:500 11px Archivo,sans-serif;color:#77736A">{{ s.k }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <div style="padding:14px 14px 6px;font:700 14px Archivo,sans-serif">Destacados</div>
+                <sc-for list="{{ C.rankings }}" as="k" hint-placeholder-count="5">
+                  <div onClick="{{ k.open }}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid #EFECE4;cursor:pointer">
+                    <div style="width:34px;height:34px;border-radius:10px;background:{{ k.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 14px 'Barlow Condensed',sans-serif;flex:none">{{ k.short }}</div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><div style="font:500 11px Archivo,sans-serif;color:#77736A">{{ k.k }}</div><div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.team }}</div></div>
+                    <div style="font:800 18px 'Barlow Condensed',sans-serif">{{ k.v }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <div style="padding:14px 14px 6px;font:700 14px Archivo,sans-serif">Pichichi</div>
+                <sc-for list="{{ C.pichichi }}" as="p" hint-placeholder-count="10">
+                  <div onClick="{{ p.open }}" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid #EFECE4;cursor:pointer;background:{{ p.bg }}">
+                    <div style="width:20px;font:800 16px 'Barlow Condensed',sans-serif;color:#8A857A">{{ p.rank }}</div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><div style="font:600 14px Archivo,sans-serif">{{ p.name }}</div><div style="display:flex;align-items:center;gap:5px;font:400 12px Archivo,sans-serif;color:#77736A"><span style="width:7px;height:7px;border-radius:2px;background:{{ p.color }}"></span>{{ p.team }}</div></div>
+                    <div style="font:800 22px 'Barlow Condensed',sans-serif">{{ p.g }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMatch }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:-58px">
+          <div style="background:#151515;color:#fff;padding:62px 20px 22px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <button onClick="{{ back }}" style="height:36px;padding:0 14px;border-radius:18px;border:none;background:rgba(255,255,255,0.12);color:#fff;font:600 13px Archivo,sans-serif;cursor:pointer">← Atrás</button>
+              <div onClick="{{ M.openComp }}" style="font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#CFCABD;cursor:pointer">{{ M.comp }} · J{{ M.j }} →</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+              <div onClick="{{ M.openHome }}" style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;cursor:pointer">
+                <div style="width:60px;height:60px;border-radius:16px;background:{{ M.hBg }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 24px 'Barlow Condensed',sans-serif">{{ M.hShort }}</div>
+                <div style="font:600 14px/1.2 Archivo,sans-serif">{{ M.home }}</div>
+                <div style="font:500 11px Archivo,sans-serif;color:#8A857A">{{ M.hPos }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+                <div style="font:800 54px/1 'Barlow Condensed',sans-serif">{{ M.center }}</div>
+                <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A">{{ M.centerSub }}</div>
+              </div>
+              <div onClick="{{ M.openAway }}" style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;cursor:pointer">
+                <div style="width:60px;height:60px;border-radius:16px;background:{{ M.aBg }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 24px 'Barlow Condensed',sans-serif">{{ M.aShort }}</div>
+                <div style="font:600 14px/1.2 Archivo,sans-serif">{{ M.away }}</div>
+                <div style="font:500 11px Archivo,sans-serif;color:#8A857A">{{ M.aPos }}</div>
+              </div>
+            </div>
+            <sc-if value="{{ M.changed }}" hint-placeholder-val="{{ false }}">
+              <div style="align-self:center;background:#F2C84B;color:#151515;border-radius:10px;padding:6px 12px;font:700 12px Archivo,sans-serif">Horario actualizado por la FCF · antes {{ M.oldLabel }}</div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ M.showAtt }}" hint-placeholder-val="{{ true }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px">
+              <div style="font:700 13px Archivo,sans-serif">¿Vas a este partido?</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+                <sc-for list="{{ M.attOpts }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.pick }}" style="height:44px;border-radius:12px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }};font:600 14px Archivo,sans-serif;cursor:pointer">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ M.played }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden">
+              <div style="padding:14px 14px 6px;display:flex;justify-content:space-between"><div style="font:700 14px Archivo,sans-serif">Acta del partido</div><div style="font:500 12px Archivo,sans-serif;color:#77736A">Árbitro: {{ M.ref }}</div></div>
+              <sc-if value="{{ M.noEvents }}" hint-placeholder-val="{{ false }}"><div style="padding:10px 14px 14px;font:500 13px Archivo,sans-serif;color:#8A857A">Sin goles ni tarjetas.</div></sc-if>
+              <sc-for list="{{ M.events }}" as="e" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:36px 16px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 14px;border-top:1px solid #EFECE4">
+                  <div style="font:700 15px 'Barlow Condensed',sans-serif;color:#77736A">{{ e.min }}'</div>
+                  <div style="width:{{ e.mw }};height:{{ e.mh }};border-radius:{{ e.mr }};background:{{ e.mc }}"></div>
+                  <div style="font:{{ e.weight }} 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.player }}</div>
+                  <div style="font:700 11px 'Barlow Condensed',sans-serif;color:#fff;background:{{ e.color }};padding:2px 6px;border-radius:5px">{{ e.team }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ M.hasPreview }}" hint-placeholder-val="{{ true }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div style="font:700 14px Archivo,sans-serif">Previa</div><div style="font:500 12px Archivo,sans-serif;color:#77736A">{{ M.h2h }}</div></div>
+              <sc-for list="{{ M.compare }}" as="c" hint-placeholder-count="5">
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;justify-content:space-between;font:600 13px Archivo,sans-serif"><span>{{ c.hv }}</span><span style="font:500 12px Archivo,sans-serif;color:#77736A">{{ c.k }}</span><span>{{ c.av }}</span></div>
+                  <div style="display:flex;gap:3px;height:6px"><div style="width:{{ c.hw }};background:{{ M.hBg }};border-radius:3px"></div><div style="flex:1;background:{{ M.aBg }};border-radius:3px"></div></div>
+                </div>
+              </sc-for>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px">
+                <div style="display:flex;gap:3px"><sc-for list="{{ M.hForm }}" as="f" hint-placeholder-count="5"><div style="width:18px;height:18px;border-radius:5px;background:{{ f.bg }};color:#fff;font:700 11px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ f.r }}</div></sc-for></div>
+                <div style="font:500 11px Archivo,sans-serif;color:#8A857A">Últimos 5</div>
+                <div style="display:flex;gap:3px"><sc-for list="{{ M.aForm }}" as="f" hint-placeholder-count="5"><div style="width:18px;height:18px;border-radius:5px;background:{{ f.bg }};color:#fff;font:700 11px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ f.r }}</div></sc-for></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden">
+            <sc-for list="{{ M.rows }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex;justify-content:space-between;gap:16px;padding:13px 14px;border-bottom:1px solid #EFECE4">
+                <div style="font:500 13px Archivo,sans-serif;color:#77736A;flex:none">{{ r.k }}</div>
+                <div style="font:600 14px Archivo,sans-serif;text-align:right">{{ r.v }}</div>
+              </div>
+            </sc-for>
+            <div style="height:110px;background:repeating-linear-gradient(135deg,#EFECE4 0 10px,#F7F5EF 10px 20px);display:flex;align-items:center;justify-content:center;font:500 11px ui-monospace,Menlo,monospace;color:#8A857A">mapa del campo</div>
+          </div>
+
+          <div style="margin:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <a href="{{ M.mapUrl }}" target="_blank" style="height:48px;border-radius:14px;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font:600 14px Archivo,sans-serif">Cómo llegar ↗</a>
+            <button onClick="{{ share }}" style="height:48px;border-radius:14px;border:1px solid #CFCABD;background:transparent;font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">Compartir</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAgenda }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;padding:6px 16px 0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 4px">
+            <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Calendario</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button onClick="{{ prevMonth }}" style="width:32px;height:32px;border-radius:16px;border:none;background:#E7E3D9;cursor:pointer;color:#151515">‹</button>
+              <div style="font:600 13px Archivo,sans-serif;min-width:74px;text-align:center">{{ monthLabel }}</div>
+              <button onClick="{{ nextMonth }}" style="width:32px;height:32px;border-radius:16px;border:none;background:#E7E3D9;cursor:pointer;color:#151515">›</button>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:20px;padding:12px 10px">
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);font:600 10px Archivo,sans-serif;letter-spacing:0.08em;color:#8A857A;text-align:center;padding-bottom:6px"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px">
+              <sc-for list="{{ cells }}" as="c" hint-placeholder-count="35">
+                <div onClick="{{ c.pick }}" style="height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer">
+                  <div style="width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.ring }};font:700 16px 'Barlow Condensed',sans-serif">{{ c.d }}</div>
+                  <div style="display:flex;gap:2px;height:5px">
+                    <sc-for list="{{ c.dots }}" as="dot" hint-placeholder-count="0"><span style="width:5px;height:5px;border-radius:3px;background:{{ dot.c }}"></span></sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div onClick="{{ toggleCalSync }}" style="background:#fff;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer">
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font:600 14px Archivo,sans-serif">Sincronizar con el calendario del móvil</div><div style="font:400 12px Archivo,sans-serif;color:#77736A">Los cambios de la FCF se reflejan también allí</div></div>
+            <div style="width:46px;height:28px;border-radius:14px;background:{{ calTrack }};padding:3px;box-sizing:border-box;display:flex;justify-content:{{ calJustify }};flex:none"><div style="width:22px;height:22px;border-radius:11px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px">
+            <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em">{{ agendaTitle }}</div>
+            <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}"><div onClick="{{ clearSel }}" style="font:600 13px Archivo,sans-serif;color:#77736A;cursor:pointer">Ver todo</div></sc-if>
+          </div>
+          <sc-if value="{{ agendaEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:24px;text-align:center;font:500 14px Archivo,sans-serif;color:#8A857A;background:#fff;border-radius:18px">Día libre. Sin partidos.</div>
+          </sc-if>
+          <sc-for list="{{ agendaGroups }}" as="g" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 4px">
+                <div style="font:600 12px Archivo,sans-serif;letter-spacing:0.06em;text-transform:uppercase;color:#5E5A51">{{ g.label }}</div>
+                <sc-if value="{{ g.clash }}" hint-placeholder-val="{{ false }}"><div style="font:700 11px Archivo,sans-serif;padding:3px 8px;border-radius:10px;background:#F2C84B">{{ g.clashText }}</div></sc-if>
+              </div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <sc-for list="{{ g.items }}" as="m" hint-placeholder-count="1">
+                  <div onClick="{{ m.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                    <div style="display:flex;flex-direction:column;align-items:center;width:52px;flex:none">
+                      <div style="font:800 20px/1 'Barlow Condensed',sans-serif">{{ m.timeOrScore }}</div>
+                      <div style="font:500 10px Archivo,sans-serif;color:#8A857A">{{ m.subTime }}</div>
+                    </div>
+                    <div style="width:3px;align-self:stretch;border-radius:2px;background:{{ m.color }}"></div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                      <div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.vsLabel }}</div>
+                      <div style="font:400 12px Archivo,sans-serif;color:#77736A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.venue }}</div>
+                    </div>
+                    <sc-if value="{{ m.changed }}" hint-placeholder-val="{{ false }}"><div style="font:700 10px Archivo,sans-serif;background:#F2C84B;border-radius:6px;padding:2px 5px">Cambio</div></sc-if>
+                    <div style="font:700 12px 'Barlow Condensed',sans-serif;color:#fff;background:{{ m.color }};padding:3px 6px;border-radius:6px">{{ m.teamShort }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px;padding:6px 16px 0">
+          <button onClick="{{ back }}" style="align-self:flex-start;height:36px;padding:0 14px;border-radius:18px;border:none;background:#E7E3D9;color:#151515;font:600 13px Archivo,sans-serif;cursor:pointer">← Cancelar</button>
+          <div style="display:flex;flex-direction:column;gap:6px;padding:0 4px">
+            <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Añadir competición</div>
+            <div style="font:400 14px/1.45 Archivo,sans-serif;color:#5E5A51">Pega el enlace de calendario, clasificación o resultados de fcf.cat.</div>
+          </div>
+          <sc-if value="{{ stepInput }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="background:#fff;border-radius:16px;padding:6px 6px 6px 14px;display:flex;align-items:center;gap:8px;border:1.5px solid #151515">
+                <input value="{{ url }}" onChange="{{ onUrl }}" placeholder="https://www.fcf.cat/competicio/…" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font:500 14px Archivo,sans-serif;color:#151515;height:40px">
+                <button onClick="{{ paste }}" style="height:36px;padding:0 12px;border-radius:10px;border:none;background:#E7E3D9;font:600 12px Archivo,sans-serif;color:#151515;cursor:pointer;white-space:nowrap">Pegar ejemplo</button>
+              </div>
+              <sc-if value="{{ urlError }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#FBE9E5;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <div style="font:700 14px Archivo,sans-serif;color:#9E2A1C">{{ urlError }}</div>
+                    <div style="font:400 13px/1.4 Archivo,sans-serif;color:#5E3A33">Busca tu equipo por nombre y lo añadimos igual.</div>
+                  </div>
+                  <button onClick="{{ tabExplore }}" style="height:44px;border-radius:12px;border:none;background:#151515;color:#fff;font:600 14px Archivo,sans-serif;cursor:pointer">Buscar equipo →</button>
+                </div>
+              </sc-if>
+              <button onClick="{{ startImport }}" style="height:52px;border-radius:16px;border:none;background:#151515;color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#C8342B">Importar</button>
+              <div onClick="{{ tabExplore }}" style="text-align:center;font:600 13px Archivo,sans-serif;color:#5E5A51;cursor:pointer;padding:6px">¿No tienes el enlace? Buscar equipo →</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ stepLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#151515;color:#fff;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+              <div style="font:500 11px ui-monospace,Menlo,monospace;color:#8A857A;word-break:break-all">{{ url }}</div>
+              <sc-for list="{{ loadLines }}" as="l" hint-placeholder-count="1">
+                <div style="display:flex;gap:10px;align-items:center;font:500 14px Archivo,sans-serif"><span style="color:#7FD39B;font-weight:700">✓</span>{{ l }}</div>
+              </sc-for>
+              <div style="height:4px;border-radius:2px;background:rgba(255,255,255,0.12);overflow:hidden"><div style="height:100%;width:{{ loadPct }};background:#F2C84B;transition:width 0.5s"></div></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ stepPick }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="background:#151515;color:#fff;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:2px">
+                <div style="font:700 16px Archivo,sans-serif">{{ importComp.name }}</div>
+                <div style="font:400 13px Archivo,sans-serif;color:#A39E92">{{ importComp.sub }}</div>
+              </div>
+              <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;padding:0 4px">¿Cuál es tu equipo?</div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <sc-for list="{{ pickList }}" as="p" hint-placeholder-count="8">
+                  <div onClick="{{ p.pick }}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid #EFECE4;cursor:pointer;background:{{ p.bg }}">
+                    <div style="font:600 14px Archivo,sans-serif">{{ p.name }}</div>
+                    <div style="width:20px;height:20px;border-radius:10px;border:2px solid {{ p.ring }};background:{{ p.dot }};box-sizing:border-box"></div>
+                  </div>
+                </sc-for>
+              </div>
+              <button onClick="{{ confirmTeam }}" style="height:52px;border-radius:16px;border:none;background:{{ confirmBg }};color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer">Añadir a mis equipos</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;top:58px;left:16px;right:16px;z-index:30;background:#151515;color:#fff;border-radius:14px;padding:12px 14px;font:600 14px/1.35 Archivo,sans-serif;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)"><span style="color:{{ toastColor }}">{{ toastIcon }}</span>{{ toast }}</div>
+    </sc-if>
+
+    <div style="position:absolute;left:12px;right:12px;bottom:30px;height:62px;border-radius:31px;background:rgba(21,21,21,0.94);display:grid;grid-template-columns:repeat(4,1fr);padding:0 6px;box-shadow:0 10px 30px rgba(0,0,0,0.18);z-index:20">
+      <button onClick="{{ tabHome }}" style="border:none;background:transparent;color:{{ tcHome }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:600 10px Archivo,sans-serif;letter-spacing:0.04em">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Inicio</button>
+      <button onClick="{{ tabAgenda }}" style="border:none;background:transparent;color:{{ tcAgenda }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:600 10px Archivo,sans-serif;letter-spacing:0.04em">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Calendario</button>
+      <button onClick="{{ tabExplore }}" style="border:none;background:transparent;color:{{ tcExplore }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:600 10px Archivo,sans-serif;letter-spacing:0.04em">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>Explorar</button>
+      <button onClick="{{ tabTeams }}" style="border:none;background:transparent;color:{{ tcTeams }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:600 10px Archivo,sans-serif;letter-spacing:0.04em">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg>Equipos</button>
+    </div>
+  </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;agenda&quot;,&quot;explore&quot;,&quot;teams&quot;,&quot;notifs&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;simDate&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;hoy&quot;,&quot;diciembre&quot;,&quot;marzo&quot;],&quot;default&quot;:&quot;hoy&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;autoSync&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;warmup&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:45,&quot;min&quot;:0,&quot;max&quot;:120,&quot;step&quot;:5,&quot;unit&quot;:&quot;min&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+const SIMD = { hoy: '2026-09-29', diciembre: '2026-12-15', marzo: '2027-03-16' };
+const DOW = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DOWL = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MON = ['ene','feb','mar','abr','may','jun','jul','ago','sept','oct','nov','dic'];
+const MONL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const RES = { V: '#1F8A4C', E: '#B5AFA2', D: '#D0402E' };
+const PAL = ['#C8342B','#2350C8','#1F8A4C','#7A3FB0','#D07A1A','#127C86','#9E2A5A','#5B6B1F','#3B3832','#1E5E9E','#B8412F','#6A4B2E'];
+const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const rng = seed => { let a = seed >>> 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+const pois = (r, l) => { const L = Math.exp(-l); let k = 0, p = 1; do { k++; p *= r(); } while (p > L); return k - 1; };
+const dt = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const addDays = (s, n) => { const d = dt(s); d.setDate(d.getDate() + n); return iso(d); };
+const between = (a, b) => Math.round((dt(b) - dt(a)) / 864e5);
+const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const fromMin = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+const norm = x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const slug = x => norm(x).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const fmtShort = s => { const d = dt(s); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; };
+const STRIP = /(^|\s)(CE|CF|UE|UD|FC|AE|CD|EF|UFB|FS|CFS|PB|UA|Juvenil|Cadet|Infantil|Aleví|Benjamí|Veterans|Femení|[A-E])(?=\s|$)/g;
+const initials = n => { const w = n.replace(STRIP, '$1').replace(/'/g, ' ').trim().split(/\s+/).filter(x => x.length > 1 && !/^(de|del|la|les|el|i|l)$/i.test(x)); if (!w.length) return n.slice(0, 2).toUpperCase(); return (w.length > 1 ? w[0][0] + w[1][0] : w[0].slice(0, 2)).toUpperCase(); };
+const shuffle = (arr, r) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+const TOWNS = ['Badalona','Sabadell','Terrassa','Mataró','Granollers','Manresa','Vic','Girona','Lleida','Tarragona','Reus','Figueres','Olot','Igualada','Vilanova','Sitges','Castelldefels','Gavà','Viladecans','Cornellà','Hospitalet','Esplugues','Sant Boi','Sant Feliu','Molins de Rei','Martorell','Rubí','Sant Cugat','Cerdanyola','Ripollet','Montcada','Barberà','Mollet','Parets','La Llagosta','Sant Adrià','Santa Coloma','Montgat','El Masnou','Premià','Vilassar','Arenys','Calella','Pineda','Malgrat','Blanes','Lloret','Palamós','Banyoles','Salt','Manlleu','Torelló','Berga','Solsona','Cervera','Tàrrega','Balaguer','Mollerussa','Valls','Cambrils','Salou','Amposta','Tortosa','El Vendrell','Calafell','Cubelles','Sant Sadurní','Vilafranca','Canovelles','Les Franqueses','Cardedeu','La Garriga','Caldes','Sant Celoni','Tordera','Sant Joan Despí','Sant Just','El Prat','Castellar','Sentmenat','Polinyà','Sant Quirze','Matadepera','Olesa','Esparreguera','Abrera','Corbera','Vallirana','Sants','Gràcia','Horta','Sarrià','Sant Andreu','Sant Martí','Poblenou','Guinardó','Les Corts','Carmel','Vallcarca','Sant Gervasi','Nou Barris','Trinitat','Verdum','Roquetes','La Marina','Besòs','Clot','Fort Pienc','Sagrada Família','Barceloneta','Raval','La Sagrera','Can Rull','La Florida','Montjuïc'];
+const PREF = ['CE','CF','UE','UD','FC','AE','CD','EF'];
+const FSPREF = ['FS','CFS','AE'];
+const FIRST = ['Marc','Pol','Arnau','Jordi','Oriol','Pau','Àlex','Sergi','Xavi','Dani','Adrià','Joan','Biel','Roger','Nil','Èric','Hugo','Iker','Martí','Jan','David','Carlos','Álvaro','Javi','Aleix','Guillem','Albert','Víctor','Rubén','Iván','Unai','Bruno'];
+const FIRSTF = ['Laia','Júlia','Paula','Marta','Aina','Clara','Ona','Carla','Noa','Irene','Berta','Lucía','Emma','Mar','Nerea','Alba','Sara','Ivet'];
+const LAST = ['Puig','Vidal','Soler','Ferrer','Martí','Serra','Font','Roca','Pujol','Casas','Mas','Riera','Vila','Costa','Bosch','Camps','Sala','Grau','García','López','Martínez','Sánchez','Romero','Navarro','Torres','Ruiz','Moreno','Gil','Ortega','Delgado','Prats','Comas'];
+const REFS = ['J. Pérez Soler','M. Vidal Roca','A. Serra Puig','D. López Mas','R. Font Casas','L. Martí Grau','S. Riera Vila'];
+const T11 = ['09:00','10:30','11:00','12:00','12:30','16:00','16:30','17:00','18:00'];
+const KIND = {
+  f11s: { mod: 'Futbol 11', cat: 'Sénior', section: 'Fútbol 11', suf: '', size: 16, mins: 90, lam: 1.35, start: '2026-09-12', times: T11 },
+  juv: { mod: 'Futbol 11', cat: 'Juvenil', section: 'Fútbol base', suf: ' Juvenil A', size: 16, mins: 90, lam: 1.5, start: '2026-09-19', times: ['09:00','10:30','11:30','12:30','16:00','17:30'] },
+  cad: { mod: 'Futbol 11', cat: 'Cadet', section: 'Fútbol base', suf: ' Cadet A', size: 16, mins: 80, lam: 1.6, start: '2026-09-19', times: ['09:00','10:30','11:30','12:30','16:00'] },
+  inf: { mod: 'Futbol 11', cat: 'Infantil', section: 'Fútbol base', suf: ' Infantil A', size: 16, mins: 70, lam: 1.8, start: '2026-09-19', times: ['09:00','10:00','11:00','12:00'] },
+  ale: { mod: 'Futbol 7', cat: 'Aleví', section: 'Fútbol base', suf: ' Aleví A', size: 12, mins: 50, lam: 2.6, start: '2026-09-26', times: ['09:00','10:00','11:00','12:00'] },
+  ben: { mod: 'Futbol 7', cat: 'Benjamí', section: 'Fútbol base', suf: ' Benjamí A', size: 12, mins: 50, lam: 3, start: '2026-09-26', times: ['09:00','10:00','11:00','12:00'] },
+  fem: { mod: 'Futbol 11', cat: 'Femení', section: 'Femenino', suf: ' Femení', size: 14, mins: 90, lam: 1.5, start: '2026-09-12', times: ['11:00','12:00','16:00','17:00','18:30'] },
+  vet: { mod: 'Futbol 7', cat: 'Veterans', section: 'Veteranos', suf: ' Veterans', size: 12, mins: 60, lam: 2.4, start: '2026-10-02', friday: true, times: ['21:00','21:30','22:00'] },
+  fs: { mod: 'Futbol sala', cat: 'Sénior', section: 'Fútbol sala', suf: '', size: 16, mins: 40, lam: 3.2, start: '2026-09-12', futsal: true, times: ['17:00','18:00','18:30','19:00','20:00'] },
+};
+const SPECS = [['Primera Catalana','f11s',2],['Segona Catalana','f11s',4],['Tercera Catalana','f11s',10],['Quarta Catalana','f11s',3],['Juvenil Preferent','juv',2],['Juvenil Primera Divisió','juv',2],['Juvenil Segona Divisió','juv',2,' Juvenil B'],['Cadet Primera Divisió','cad',2],['Cadet Segona Divisió','cad',2,' Cadet B'],['Infantil Primera Divisió','inf',2],['Infantil Segona Divisió','inf',2,' Infantil B'],['Aleví Primera Divisió','ale',2],['Aleví Tercera Divisió','ale',2,' Aleví B'],['Benjamí Primera Divisió','ben',2],['Primera Divisió Femenina','fem',1],['Segona Divisió Femenina','fem',2],['Lliga Veterans F7','vet',2],['Segona Divisió FS','fs',1],['Tercera Divisió FS','fs',2]];
+const FIXED = {
+  'Segona Catalana|4': ['UE Poble Sec','CE Júpiter B','AE Prat B','CF Besòs Batlló','UD Guinardó','CE Montañesa','CF Lloreda','UFB Jàbac','CE Carmel','UE Sant Andreu B','CF Vallcarca','CD La Sagrera','UE Clot','CE Europa C','CF Trinitat','AE Verdum'],
+  'Tercera Divisió FS|2': ['FS Gràcia','CFS Sant Cugat','FS Montcada','AE Les Corts','CFS Sarrià','FS Badalona B','CE Vallvidrera','FS Horta','FS Sant Andreu','CFS Rubí','FS Cerdanyola','FS Ripollet','CFS Mollet','FS Poblenou','FS Esplugues','CFS Castellar'],
+  'Lliga Veterans F7|1': ['CE Sants Veterans','CF Can Rull Veterans','UA Horta Veterans','CE Europa Veterans','UE Sant Andreu Veterans','CF La Florida Veterans','PB Sant Martí Veterans','CE Mercantil Veterans','UE Sants Veterans','CF Damm Veterans','CE Laietà Veterans','UFB Jàbac Veterans'],
+};
+const SI_VENUE = { venue: 'Camp de Futbol Col·legi Sant Ignasi', addr: 'C/ del General Vives, 28-40 · Barcelona', surface: 'Césped artificial' };
+const INJECT = { 'segona-catalana-3': 'CE Sant Ignasi', 'tercera-catalana-10': 'CE Sant Ignasi B', 'juvenil-primera-divisio-2': 'CE Sant Ignasi Juvenil A', 'juvenil-segona-divisio-1': 'CE Sant Ignasi Juvenil B',
+  'cadet-primera-divisio-1': 'CE Sant Ignasi Cadet A', 'cadet-segona-divisio-1': 'CE Sant Ignasi Cadet B', 'infantil-primera-divisio-1': 'CE Sant Ignasi Infantil A', 'infantil-segona-divisio-1': 'CE Sant Ignasi Infantil B',
+  'alevi-primera-divisio-2': 'CE Sant Ignasi Aleví A', 'alevi-tercera-divisio-1': 'CE Sant Ignasi Aleví B', 'benjami-primera-divisio-1': 'CE Sant Ignasi Benjamí A' };
+const SI_BASE = Object.fromEntries(Object.values(INJECT).map(n => [n, { ...SI_VENUE, color: n === 'CE Sant Ignasi B' ? '#C8342B' : '#1B2F6B' }]));
+Object.assign(SI_BASE['CE Sant Ignasi'], { homeDay: 0, homeTime: '12:00', str: 1.3 });
+Object.assign(SI_BASE['CE Sant Ignasi B'], { homeDay: 6, homeTime: '17:00', str: 1.15 });
+const clubOf = n => n.replace(/\s+(Juvenil|Cadet|Infantil|Aleví|Benjamí|Veterans|Femení)(\s+[A-E])?$/, '').replace(/\s+[B-E]$/, '');
+const BASE = { ...SI_BASE, 'UE Poble Sec': { color: '#C8342B', homeDay: 0, homeTime: '11:00', venue: 'Camp Municipal Poble Sec', addr: 'Av. Francesc Ferrer i Guàrdia · Barcelona', str: 1.45 },
+  'FS Gràcia': { color: '#2350C8', homeDay: 0, homeTime: '19:00', venue: 'Pavelló Municipal La Creueta', addr: 'C/ de Pere Pau · Barcelona', str: 1.05 } };
+const ME_TEAMS = ['CE Sant Ignasi', 'CE Sant Ignasi B'];
+
+const DIR = (() => {
+  const groups = {}, teams = {}, list = [];
+  const taken = new Set([...Object.values(FIXED).flat(), ...Object.values(INJECT)]);
+  for (const [div, k, n, sufO] of SPECS) for (let gi = 1; gi <= n; gi++) {
+    const K = { ...KIND[k], ...(sufO ? { suf: sufO } : {}) }, gid = slug(div) + '-' + gi, r = rng(hash(gid));
+    let names = FIXED[div + '|' + gi];
+    if (!names) {
+      names = [];
+      for (const t of shuffle(TOWNS, r)) {
+        if (names.length >= K.size) break;
+        const pre = K.futsal ? FSPREF[hash(t) % 3] : PREF[hash(t) % PREF.length];
+        const base = pre + ' ' + t + K.suf; let nm = base, i = 0;
+        while (taken.has(nm) && i < 4) nm = base + ' ' + 'BCDE'[i++];
+        if (taken.has(nm)) continue;
+        taken.add(nm); names.push(nm);
+      }
+      if (INJECT[gid]) names[Math.floor(r() * names.length)] = INJECT[gid];
+    }
+    const G = { gid, div, gi, group: 'Grup ' + gi, kind: k, ...K, teams: names,
+      url: 'https://www.fcf.cat/competicio/2627/' + slug(K.mod) + '/' + slug(div) + '/grup-' + gi };
+    groups[gid] = G;
+    names.forEach(nm => {
+      const town = nm.replace(STRIP, '$1').trim() || nm;
+      const h = hash(nm), b = BASE[nm] || {};
+      const e = { name: nm, gid, town, color: b.color || PAL[h % PAL.length], str: b.str || 0.65 + (hash(nm + 's') % 1000) / 1000 * 0.85,
+        homeDay: b.homeDay ?? (K.friday ? 5 : h % 3 === 0 ? 6 : 0), homeTime: b.homeTime || K.times[hash(nm + 't') % K.times.length],
+        venue: b.venue || (K.futsal ? 'Pavelló Municipal ' : 'Camp Municipal ') + town, addr: b.addr || town,
+        surface: K.futsal ? (h % 3 ? 'Parquet' : 'Pista sintètica') : (h % 7 === 0 ? 'Césped natural' : 'Césped artificial') };
+      teams[nm] = e;
+      list.push({ name: nm, gid, club: clubOf(nm), key: norm(nm + ' ' + div + ' ' + K.cat + ' ' + K.mod + ' ' + town), section: K.section });
+    });
+  }
+  return { groups, teams, list };
+})();
+
+const rr = n => { const ids = [...Array(n).keys()], rounds = []; for (let r = 0; r < n - 1; r++) { const p = []; for (let i = 0; i < n / 2; i++) { let a = ids[i], b = ids[n - 1 - i]; if ((r + i) % 2) [a, b] = [b, a]; p.push([a, b]); } rounds.push(p); ids.splice(1, 0, ids.pop()); } return [...rounds, ...rounds.map(p => p.map(([a, b]) => [b, a]))]; };
+const ROSTERS = {};
+const roster = name => {
+  if (ROSTERS[name]) return ROSTERS[name];
+  const e = DIR.teams[name], G = DIR.groups[e.gid], r = rng(hash(name + 'r'));
+  const pattern = G.mod === 'Futbol 11' ? ['POR','POR','DEF','DEF','DEF','DEF','DEF','DEF','MIG','MIG','MIG','MIG','MIG','MIG','DAV','DAV','DAV','DAV'] : ['POR','POR','DEF','DEF','DEF','MIG','MIG','MIG','MIG','DAV','DAV','DAV'];
+  const fn = G.cat === 'Femení' ? FIRSTF : FIRST; let num = 2;
+  const ps = pattern.map((pos, i) => ({ name: fn[Math.floor(r() * fn.length)] + ' ' + LAST[Math.floor(r() * LAST.length)], pos, dorsal: pos === 'POR' ? (i === 0 ? 1 : 13) : (num === 13 ? ++num : num++) }));
+  if (ME_TEAMS.includes(name)) { const i = ps.findIndex(p => p.pos === 'MIG'); ps[i] = { name: 'Tú', pos: 'MIG', dorsal: 10, me: true }; ps.forEach((p, j) => { if (j !== i && p.dorsal === 10) p.dorsal = 24; }); }
+  return (ROSTERS[name] = ps);
+};
+const W = { POR: 0.02, DEF: 0.6, MIG: 1.6, DAV: 3.2 };
+const tableOf = (G, ms, mode, upto) => {
+  const rows = {}; G.teams.forEach(n => rows[n] = { name: n, pj: 0, v: 0, e: 0, d: 0, gf: 0, gc: 0, pts: 0 });
+  const add = (n, f, a) => { const x = rows[n]; x.pj++; x.gf += f; x.gc += a; if (f > a) { x.v++; x.pts += 3; } else if (f === a) { x.e++; x.pts++; } else x.d++; };
+  ms.forEach(m => { if (!m.played || (upto != null && m.r > upto)) return; if (mode !== 'away') add(m.home, m.hg, m.ag); if (mode !== 'home') add(m.away, m.ag, m.hg); });
+  return Object.values(rows).sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc) || b.gf - a.gf || a.name.localeCompare(b.name));
+};
+const SIMS = {};
+const sim = (gid, today) => {
+  const key = gid + today; if (SIMS[key]) return SIMS[key];
+  const G = DIR.groups[gid], rounds = rr(G.teams.length), matches = [], byId = {}, pstats = {};
+  G.teams.forEach(n => { pstats[n] = {}; roster(n).forEach(p => pstats[n][p.dorsal] = { ...p, pj: 0, g: 0, yc: 0, rc: 0 }); });
+  rounds.forEach((pairs, r) => {
+    let base = addDays(G.start, 7 * r); if (base >= '2026-12-19') base = addDays(base, 21);
+    pairs.forEach(([a, b], i) => {
+      const H = DIR.teams[G.teams[a]], A = DIR.teams[G.teams[b]];
+      const date = G.friday ? base : addDays(base, H.homeDay === 0 ? 1 : 0);
+      const m = { id: gid + ':' + r + ':' + i, gid, r, j: r + 1, home: H.name, away: A.name, date, time: H.homeTime, venue: H.venue, addr: H.addr, surface: H.surface, played: date < today, events: [] };
+      if (m.played) {
+        const x = rng(hash(m.id));
+        m.hg = pois(x, G.lam * Math.pow(H.str / A.str, 0.8) * 1.12); m.ag = pois(x, G.lam * Math.pow(A.str / H.str, 0.8) * 0.9);
+        m.ref = REFS[Math.floor(x() * REFS.length)];
+        [['h', H.name, m.hg], ['a', A.name, m.ag]].forEach(([side, tn, goals]) => {
+          const on = roster(tn).filter(p => p.pos === 'POR' ? p.dorsal === 1 || x() < 0.1 : x() < 0.82);
+          on.forEach(p => pstats[tn][p.dorsal].pj++);
+          const tot = on.reduce((s, p) => s + W[p.pos], 0);
+          for (let g = 0; g < goals; g++) { let t = x() * tot, p = on[0]; for (const q of on) { t -= W[q.pos]; if (t <= 0) { p = q; break; } } pstats[tn][p.dorsal].g++; m.events.push({ min: 1 + Math.floor(x() * G.mins), side, type: 'goal', player: p.name, me: p.me }); }
+          const yc = pois(x, G.mins >= 70 ? 1.6 : 0.7);
+          for (let c = 0; c < yc; c++) { const p = on[Math.floor(x() * on.length)]; pstats[tn][p.dorsal].yc++; m.events.push({ min: 1 + Math.floor(x() * G.mins), side, type: 'yc', player: p.name, me: p.me }); }
+          if (x() < 0.05) { const p = on[Math.floor(x() * on.length)]; pstats[tn][p.dorsal].rc++; m.events.push({ min: 1 + Math.floor(x() * G.mins), side, type: 'rc', player: p.name, me: p.me }); }
+        });
+        m.events.sort((p, q) => p.min - q.min);
+      }
+      matches.push(m); byId[m.id] = m;
+    });
+  });
+  const lastPlayed = matches.filter(m => m.played).reduce((a, m) => Math.max(a, m.r), -1);
+  const history = {}; G.teams.forEach(n => history[n] = []);
+  for (let r = 0; r <= lastPlayed; r++) tableOf(G, matches, 'all', r).forEach((row, i) => history[row.name].push(i + 1));
+  const cur = matches.find(m => !m.played);
+  return (SIMS[key] = { G, matches, byId, pstats, history, lastPlayed, nRounds: rounds.length, curRound: cur ? cur.r : rounds.length - 1, table: tableOf(G, matches, 'all') });
+};
+const SAMPLE_URL = 'https://www.fcf.cat/competicio/2627/futbol-7/lliga-veterans-f7/grup-1';
+const PREF_DEFS = [['horario', 'Cambios de horario o campo', 'Al instante, en cuanto la FCF los publica'], ['resultados', 'Resultados y actas', 'Cuando se cierra el acta'], ['recordatorio', 'Recordatorio de convocatoria', '2 horas antes de la hora de llegada'], ['tabla', 'Movimientos en la clasificación', 'Si subís o bajáis de posición']];
+
+class Component extends DCLogic {
+  state = { screen: null, stack: [], teamName: 'CE Sant Ignasi', matchId: null, gid: null, teamTab: 'resumen', compTab: 'tabla', tableMode: 'all', round: null,
+    att: {}, mine: ['CE Sant Ignasi', 'CE Sant Ignasi B'], changes: {}, notifs: [], sync: 'idle', lastSync: Date.now() - 120000, applied: 0,
+    toast: null, toastKind: 'ok', selDay: null, calOffset: 0, calSync: false, url: '', urlError: null, addStep: 'input', loadN: 0, pick: null, importGid: null,
+    query: '', chip: 'Todos', prefs: { horario: true, resultados: true, recordatorio: true, tabla: false }, readAt: 0 };
+  scrollRef = React.createRef();
+
+  today() { return SIMD[this.props.simDate] || SIMD.hoy; }
+  sim(gid) { return sim(gid, this.today()); }
+  cur() { return this.state.screen || this.props.startScreen || 'home'; }
+  color(n) { return (DIR.teams[n] || {}).color || '#3B3832'; }
+  scrollTop() { if (this.scrollRef.current) this.scrollRef.current.scrollTop = 0; }
+  snap(s) { return { screen: this.cur(), teamName: s.teamName, matchId: s.matchId, gid: s.gid, teamTab: s.teamTab, compTab: s.compTab, round: s.round }; }
+  go(screen, extra = {}) { this.setState(s => ({ stack: [...s.stack, this.snap(s)], screen, ...extra }), () => this.scrollTop()); }
+  tab(screen) { this.setState({ screen, stack: [], addStep: 'input', selDay: null, urlError: null }, () => this.scrollTop()); }
+  back = () => this.setState(s => { const st = [...s.stack]; const p = st.pop() || { screen: 'home' }; return { stack: st, ...p, addStep: 'input' }; }, () => this.scrollTop());
+  flash(msg, kind = 'ok') { clearTimeout(this._t); this.setState({ toast: msg, toastKind: kind }); this._t = setTimeout(() => this.setState({ toast: null }), 3200); }
+  openTeam(n) { this.go('team', { teamName: n, teamTab: 'resumen' }); }
+  openComp(gid) { this.go('comp', { gid, compTab: 'tabla', tableMode: 'all', round: null }); }
+  openMatch(id) { this.go('match', { matchId: id }); }
+  matchById(id) { return this.sim(id.split(':')[0]).byId[id]; }
+
+  componentDidMount() {
+    this._tick = setInterval(() => this.forceUpdate(), 20000);
+    if (this.props.autoSync ?? true) this._auto = setTimeout(() => this.sync(true), 4500);
+  }
+  componentWillUnmount() { clearTimeout(this._t); clearInterval(this._i); clearInterval(this._tick); clearTimeout(this._auto); clearTimeout(this._s); }
+
+  myMatches() {
+    const seen = {}, out = [];
+    this.state.mine.forEach(n => { const e = DIR.teams[n]; if (!e) return; this.sim(e.gid).matches.forEach(m => { if ((m.home === n || m.away === n) && !seen[m.id]) { seen[m.id] = 1; out.push(m); } }); });
+    return out;
+  }
+  eff(m) { const c = this.state.changes[m.id]; return c ? { ...m, date: c.date, time: c.time } : m; }
+  sortKey = m => { const e = this.eff(m); return e.date + e.time; };
+
+  sync = auto => {
+    if (this.state.sync === 'syncing') return;
+    this.setState({ sync: 'syncing' });
+    this._s = setTimeout(() => {
+      const s = this.state, pend = this.myMatches().filter(m => !m.played && !s.changes[m.id]).sort((a, b) => this.sortKey(a).localeCompare(this.sortKey(b)));
+      let ev = null;
+      if (s.applied === 0 && pend[0]) { const m = pend[0]; ev = { m, date: m.date, time: fromMin(Math.min(toMin(m.time) + 90, 21 * 60)) }; }
+      else if (s.applied === 1) { const m = pend.find(x => x.home === s.mine[1] || x.away === s.mine[1]) || pend[1]; if (m) { const d = dt(m.date).getDay(); ev = { m, date: addDays(m.date, d === 6 ? 1 : d === 0 ? -1 : 1), time: '12:00' }; } }
+      if (!ev) { this.setState({ sync: 'idle', lastSync: Date.now() }); if (!auto) this.flash('Todo al día. Sin cambios en la FCF.'); return; }
+      const { m } = ev, oldLabel = (ev.date !== m.date ? fmtShort(m.date) + ' ' : '') + m.time, newLabel = (ev.date !== m.date ? fmtShort(ev.date) + ' ' : '') + ev.time;
+      this.setState(st => ({ sync: 'idle', lastSync: Date.now(), applied: st.applied + 1,
+        changes: { ...st.changes, [m.id]: { date: ev.date, time: ev.time, oldDate: m.date, oldTime: m.time } },
+        notifs: [{ id: 'n' + Date.now(), matchId: m.id, at: Date.now(), title: 'Cambio de horario', text: m.home + ' – ' + m.away + ': ' + oldLabel + ' → ' + newLabel }, ...st.notifs] }));
+      this.flash('La FCF ha cambiado el horario: ' + m.home + ' – ' + m.away + ' pasa a ' + newLabel, 'warn');
+    }, 1400);
+  };
+
+  startImport = () => {
+    const url = this.state.url.trim() || SAMPLE_URL;
+    if (!/fcf\.cat/i.test(url)) { this.setState({ url, urlError: 'Ese enlace no es de fcf.cat' }); return; }
+    const G = Object.values(DIR.groups).find(g => url.toLowerCase().includes(slug(g.div) + '/grup-' + g.gi));
+    if (!G) { this.setState({ url, urlError: 'No hemos podido leer este enlace' }); return; }
+    this.setState({ url, urlError: null, addStep: 'loading', loadN: 0, pick: null, importGid: G.gid });
+    clearInterval(this._i);
+    this._i = setInterval(() => { const n = this.state.loadN + 1; if (n > 4) { clearInterval(this._i); this.setState({ addStep: 'pick' }); return; } this.setState({ loadN: n }); }, 600);
+  };
+  follow(n) {
+    this.setState(s => s.mine.includes(n) ? { mine: s.mine.filter(x => x !== n) } : { mine: [...s.mine, n] });
+    this.flash(this.state.mine.includes(n) ? n + ' quitado de tus equipos' : n + ' añadido a tus equipos');
+  }
+
+  mv(m0, persp) {
+    const s = this.state, m = this.eff(m0), c = s.changes[m.id], G = DIR.groups[m.gid];
+    if (persp === undefined) persp = s.mine.includes(m.home) ? m.home : s.mine.includes(m.away) ? m.away : null;
+    const isHome = persp === m.home, opp = persp ? (isHome ? m.away : m.home) : null;
+    let res = null; if (m.played && persp) { const f = isHome ? m.hg : m.ag, a = isHome ? m.ag : m.hg; res = f > a ? 'V' : f < a ? 'D' : 'E'; }
+    const d = dt(m.date), days = between(this.today(), m.date), att = s.att[m.id];
+    const A = { si: ['Voy ✓', '#7FD39B', '#0E2A18'], no: ['No voy', '#D0402E', '#fff'], duda: ['En duda', '#F2C84B', '#151515'] }[att] || ['¿Vas? Responde', '#fff', '#151515'];
+    const score = m.played ? m.hg + '–' + m.ag : '';
+    return { id: m.id, gid: m.gid, r: m.r, j: m.j, played: m.played, pending: !m.played, res, resBg: RES[res] || '#3B3832',
+      home: m.home, away: m.away, hShort: initials(m.home), aShort: initials(m.away), hBg: this.color(m.home), aBg: this.color(m.away),
+      score, time: m.time, date: m.date, color: persp ? this.color(persp) : '#151515', teamName: persp || G.div, teamShort: persp ? initials(persp) : '',
+      comp: G.div, side: persp ? (isHome ? 'Casa' : 'Fuera') : '', opp: opp || '', vsLabel: persp ? (isHome ? 'vs ' : '@ ') + opp : m.home + ' – ' + m.away,
+      dow: DOW[d.getDay()], dnum: d.getDate(), dateShort: fmtShort(m.date), dateLong: DOWL[d.getDay()] + ', ' + d.getDate() + ' de ' + MON[d.getMonth()],
+      inDays: days === 0 ? 'Hoy' : days === 1 ? 'Mañana' : days > 0 ? 'En ' + days + ' días' : 'Jugado',
+      callTime: fromMin(toMin(m.time) - (this.props.warmup ?? 45)), venue: m.venue, address: m.addr, surface: m.surface,
+      mapUrl: 'https://www.google.com/maps/search/' + encodeURIComponent(m.venue + ' ' + m.addr),
+      changed: !!c, oldLabel: c ? (c.oldDate !== c.date ? fmtShort(c.oldDate) + ' ' : '') + c.oldTime : '', timeBg: c ? '#F2C84B' : '#F3F1EA',
+      timeOrScore: m.played ? score : m.time, subTime: m.played ? 'final' : 'conv. ' + fromMin(toMin(m.time) - (this.props.warmup ?? 45)),
+      attLabel: A[0], attBg: A[1], attFg: A[2], open: () => this.openMatch(m.id) };
+  }
+
+  teamStats(name) {
+    const e = DIR.teams[name], S = this.sim(e.gid), G = S.G;
+    const ms = S.matches.filter(m => m.home === name || m.away === name).sort((a, b) => a.r - b.r);
+    const pl = ms.filter(m => m.played).map(m => { const h = m.home === name; return { m, f: h ? m.hg : m.ag, a: h ? m.ag : m.hg, h }; });
+    const idx = S.table.findIndex(r => r.name === name), row = S.table[idx];
+    const res = x => x.f > x.a ? 'V' : x.f < x.a ? 'D' : 'E';
+    return { e, S, G, ms, pl, pos: idx + 1, row, res };
+  }
+  formOf(name, n = 5) { const { pl, res } = this.teamStats(name); return pl.slice(-n).map(x => ({ r: res(x), bg: RES[res(x)] })); }
+
+  vmTeam(name) {
+    const s = this.state, { e, S, G, ms, pl, pos, row, res } = this.teamStats(name), pj = row.pj || 0;
+    const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—', per = (a, b) => b ? (a / b).toFixed(1) : '—';
+    let streak = 'Sin partidos';
+    if (pl.length) { const rs = pl.map(res), last = rs[rs.length - 1]; let n = 0; for (let i = rs.length - 1; i >= 0 && rs[i] === last; i--) n++;
+      if (last === 'V') streak = n > 1 ? n + ' victorias seguidas' : 'Viene de ganar';
+      else { let u = 0; for (let i = rs.length - 1; i >= 0 && rs[i] !== (last === 'D' ? 'V' : 'D'); i--) u++; streak = last === 'D' ? u + (u > 1 ? ' partidos sin ganar' : ' partido sin ganar') : u + (u > 1 ? ' partidos sin perder' : ' partido sin perder'); } }
+    const split = ['home', 'away'].map(k => { const xs = pl.filter(x => x.h === (k === 'home')); const v = xs.filter(x => x.f > x.a).length, d = xs.filter(x => x.f < x.a).length, em = xs.length - v - d;
+      return { k: k === 'home' ? 'En casa' : 'Fuera', pts: v * 3 + em, rec: v + 'V ' + em + 'E ' + d + 'D', goals: xs.reduce((a, x) => a + x.f, 0) + '–' + xs.reduce((a, x) => a + x.a, 0) }; });
+    const hist = S.history[name] || [], N = G.teams.length;
+    const chartPts = hist.map((p, i) => (hist.length === 1 ? 150 : i / (hist.length - 1) * 300).toFixed(1) + ',' + (6 + (p - 1) / (N - 1) * 78).toFixed(1)).join(' ');
+    const step = G.mins / 6, bf = Array(6).fill(0), bc = Array(6).fill(0);
+    pl.forEach(x => x.m.events.forEach(ev => { if (ev.type !== 'goal') return; const b = Math.min(5, Math.floor((ev.min - 1) / step)); ((ev.side === 'h') === x.h ? bf : bc)[b]++; }));
+    const mx = Math.max(1, ...bf, ...bc);
+    const players = Object.values(S.pstats[name]);
+    const isMine = s.mine.includes(name);
+    return { name, short: initials(name), color: e.color, div: G.div, group: G.group, mod: G.mod, venue: e.venue, homeLabel: DOW[e.homeDay] + ' ' + e.homeTime, nTeams: N,
+      head: [{ k: 'Pos', v: pos + 'º' }, { k: 'Pts', v: row.pts }, { k: 'GF', v: row.gf }, { k: 'GC', v: row.gc }],
+      noData: pj === 0,
+      tiles: [{ k: 'Goles a favor por partido', v: per(row.gf, pj) }, { k: 'Goles en contra por partido', v: per(row.gc, pj) }, { k: 'Victorias', v: pct(row.v, pj) },
+        { k: 'Porterías a cero', v: pl.filter(x => x.a === 0).length }, { k: 'Partidos sin marcar', v: pl.filter(x => x.f === 0).length }, { k: 'Partidos con 3+ goles', v: pct(pl.filter(x => x.f + x.a >= 3).length, pj) }],
+      streak, form: pl.slice(-5).map(x => ({ bg: RES[res(x)], score: x.f + '–' + x.a, opp: initials(x.h ? x.m.away : x.m.home), open: () => this.openMatch(x.m.id) })),
+      split, hasChart: hist.length > 1, chartPts, chartNote: hist.length ? 'ahora ' + hist[hist.length - 1] + 'º' : '',
+      buckets: bf.map((f, i) => ({ label: Math.round(i * step) + "'", fh: Math.round(f / mx * 100) + '%', ch: Math.round(bc[i] / mx * 100) + '%' })),
+      scorers: players.filter(p => p.g > 0).sort((a, b) => b.g - a.g || a.pj - b.pj).slice(0, 4).map(p => ({ ...p, bg: p.me ? '#F2C84B33' : 'transparent' })),
+      roster: players.sort((a, b) => a.dorsal - b.dorsal).map(p => ({ ...p, bg: p.me ? '#F2C84B33' : 'transparent', weight: p.me ? 700 : 500 })),
+      matches: ms.map(m => this.mv(m, name)),
+      followLabel: isMine ? 'En mis equipos ✓' : '+ Añadir a mis equipos', followBg: isMine ? 'rgba(255,255,255,0.18)' : '#fff', followFg: isMine ? '#fff' : '#151515',
+      toggleFollow: () => this.follow(name), openComp: () => this.openComp(e.gid) };
+  }
+
+  vmComp(gid) {
+    const s = this.state, S = this.sim(gid), G = S.G, N = G.teams.length;
+    const tbl = s.tableMode === 'all' ? S.table : tableOf(G, S.matches, s.tableMode);
+    const rows = tbl.map((r, i) => { const mine = s.mine.includes(r.name); const dg = r.gf - r.gc;
+      return { pos: i + 1, name: r.name, color: this.color(r.name), pj: r.pj, v: r.v, e: r.e, d: r.d, dg: (dg > 0 ? '+' : '') + dg, pts: r.pts,
+        bg: mine ? this.color(r.name) + '1F' : 'transparent', weight: mine ? 700 : 500, zone: i < 2 ? '#1F8A4C' : i >= N - 3 ? '#D0402E' : 'transparent', open: () => this.openTeam(r.name) }; });
+    const round = s.round ?? S.curRound;
+    const rms = S.matches.filter(m => m.r === round);
+    const played = S.matches.filter(m => m.played), np = played.length;
+    const goals = played.reduce((a, m) => a + m.hg + m.ag, 0);
+    const all = []; G.teams.forEach(n => Object.values(S.pstats[n]).forEach(p => all.push({ ...p, team: n })));
+    const best = (f, dir = 1) => [...S.table].sort((a, b) => dir * (f(b) - f(a)))[0];
+    const hT = tableOf(G, S.matches, 'home'), aT = tableOf(G, S.matches, 'away');
+    const cards = G.teams.map(n => ({ n, c: Object.values(S.pstats[n]).reduce((a, p) => a + p.yc + p.rc * 2, 0) })).sort((a, b) => b.c - a.c)[0];
+    const rk = (k, n, v) => ({ k, team: n, short: initials(n), color: this.color(n), v, open: () => this.openTeam(n) });
+    const gf = best(r => r.gf), gc = best(r => r.gc, -1);
+    const dates = rms.map(m => this.eff(m).date).sort();
+    return { gid, div: G.div, group: G.group, mod: G.mod, cat: G.cat, url: G.url, nTeams: N, nRounds: S.nRounds, curJ: S.curRound + 1, rows,
+      roundJ: round + 1, roundDate: dates.length ? fmtShort(dates[0]) + (dates[dates.length - 1] !== dates[0] ? ' – ' + fmtShort(dates[dates.length - 1]) : '') : '',
+      roundMatches: rms.map(m => { const v = this.mv(m, null); const mine = s.mine.includes(m.home) || s.mine.includes(m.away); return { ...v, center: m.played ? v.score : v.time, rowBg: mine ? '#F2C84B26' : 'transparent' }; }),
+      prevRound: () => this.setState({ round: Math.max(0, round - 1) }), nextRound: () => this.setState({ round: Math.min(S.nRounds - 1, round + 1) }),
+      avgs: [{ k: 'Goles por partido', v: np ? (goals / np).toFixed(2) : '—' }, { k: 'Victorias locales', v: np ? Math.round(played.filter(m => m.hg > m.ag).length / np * 100) + '%' : '—' },
+        { k: 'Empates', v: np ? Math.round(played.filter(m => m.hg === m.ag).length / np * 100) + '%' : '—' }, { k: 'Partidos jugados', v: np + '/' + S.matches.length }],
+      rankings: np ? [rk('Ataque más goleador', gf.name, gf.gf + ' GF'), rk('Defensa menos goleada', gc.name, gc.gc + ' GC'), rk('Mejor local', hT[0].name, hT[0].pts + ' pts'), rk('Mejor visitante', aT[0].name, aT[0].pts + ' pts'), rk('Más tarjetas', cards.n, cards.c)] : [],
+      pichichi: all.filter(p => p.g > 0).sort((a, b) => b.g - a.g || a.pj - b.pj).slice(0, 10).map((p, i) => ({ rank: i + 1, name: p.name, team: p.team, color: this.color(p.team), g: p.g, bg: p.me ? '#F2C84B33' : 'transparent', open: () => this.openTeam(p.team) })) };
+  }
+
+  vmMatch(id) {
+    const s = this.state, m = this.matchById(id), v = this.mv(m), S = this.sim(m.gid), G = S.G;
+    const posOf = n => S.table.findIndex(r => r.name === n) + 1, rowOf = n => S.table.find(r => r.name === n);
+    const H = rowOf(m.home), A = rowOf(m.away), N = G.teams.length;
+    const involved = s.mine.includes(m.home) || s.mine.includes(m.away);
+    const cmp = (k, hv, av, hn, an) => ({ k, hv, av, hw: (hn + an ? Math.round(hn / (hn + an) * 100) : 50) + '%' });
+    const per = (a, b) => b ? a / b : 0;
+    const first = S.matches.find(x => x.home === m.away && x.away === m.home);
+    const h2h = first && first.played && first.r < m.r ? 'Ida: ' + first.home + ' ' + first.hg + '–' + first.ag : '1ª vuelta';
+    const MK = { goal: ['10px', '10px', '5px', '#151515'], yc: ['8px', '11px', '2px', '#F2C84B'], rc: ['8px', '11px', '2px', '#D0402E'] };
+    const cur = s.att[m.id];
+    return { ...v, hPos: posOf(m.home) + 'º · ' + H.pts + ' pts', aPos: posOf(m.away) + 'º · ' + A.pts + ' pts',
+      center: m.played ? v.score : v.time, centerSub: m.played ? 'Final · ' + v.dateShort : v.dateShort,
+      showAtt: !m.played && involved, ref: m.ref || '', noEvents: m.played && !m.events.length,
+      events: m.events.map(ev => { const tn = ev.side === 'h' ? m.home : m.away, k = MK[ev.type]; return { min: ev.min, player: ev.player + (ev.type === 'rc' ? ' (roja)' : ''), team: initials(tn), color: this.color(tn), mw: k[0], mh: k[1], mr: k[2], mc: k[3], weight: ev.me ? 700 : 500 }; }),
+      hasPreview: !m.played && H.pj > 0, h2h,
+      compare: [cmp('Posición', posOf(m.home) + 'º', posOf(m.away) + 'º', N + 1 - posOf(m.home), N + 1 - posOf(m.away)), cmp('Puntos', H.pts, A.pts, H.pts, A.pts),
+        cmp('Goles a favor / partido', per(H.gf, H.pj).toFixed(1), per(A.gf, A.pj).toFixed(1), per(H.gf, H.pj), per(A.gf, A.pj)),
+        cmp('Goles en contra / partido', per(H.gc, H.pj).toFixed(1), per(A.gc, A.pj).toFixed(1), per(A.gc, A.pj), per(H.gc, H.pj)),
+        cmp('Victorias', Math.round(per(H.v, H.pj) * 100) + '%', Math.round(per(A.v, A.pj) * 100) + '%', per(H.v, H.pj), per(A.v, A.pj))],
+      hForm: this.formOf(m.home), aForm: this.formOf(m.away),
+      rows: [{ k: 'Fecha', v: v.dateLong }, { k: 'Hora', v: v.time }, ...(m.played || !involved ? [] : [{ k: 'Convocatoria', v: v.callTime + ' en el campo' }]),
+        { k: 'Campo', v: v.venue }, { k: 'Dirección', v: v.address }, { k: 'Superficie', v: v.surface }],
+      attOpts: [['si', 'Voy'], ['duda', 'En duda'], ['no', 'No voy']].map(([k, label]) => { const on = cur === k, c = { si: '#1F8A4C', duda: '#C99A17', no: '#D0402E' }[k];
+        return { label, bg: on ? c : '#fff', fg: on ? '#fff' : '#151515', border: on ? c : '#DDD8CC', pick: () => this.setState(st => ({ att: { ...st.att, [m.id]: k } })) }; }),
+      openComp: () => this.openComp(m.gid), openHome: () => this.openTeam(m.home), openAway: () => this.openTeam(m.away) };
+  }
+
+  renderVals() {
+    const s = this.state, screen = this.cur(), today = this.today(), td = dt(today);
+    const mm = this.myMatches().sort((a, b) => this.sortKey(a).localeCompare(this.sortKey(b))).map(m => this.mv(m));
+    const future = mm.filter(m => m.pending), past = mm.filter(m => m.played).reverse();
+    const byDay = {}; future.forEach(m => (byDay[m.date] = byDay[m.date] || []).push(m));
+    const clashDay = Object.keys(byDay).sort().find(k => byDay[k].length > 1);
+    const gapTxt = g => Math.floor(g / 60) + 'h' + (g % 60 ? ' ' + (g % 60) + 'min' : '');
+    let conflict = null;
+    if (clashDay) { const [a, b] = byDay[clashDay], gap = Math.abs(toMin(b.time) - toMin(a.time));
+      conflict = { day: a.dateShort.toLowerCase(), text: a.teamName + ' a las ' + a.time + ' y ' + b.teamName + ' a las ' + b.time + '. ' + gapTxt(gap) + ' de margen.', open: () => this.go('agenda', { selDay: clashDay, calOffset: (dt(clashDay).getFullYear() - td.getFullYear()) * 12 + dt(clashDay).getMonth() - td.getMonth() }) }; }
+
+    const meP = []; ME_TEAMS.filter(n => s.mine.includes(n)).forEach(n => Object.values(this.sim(DIR.teams[n].gid).pstats[n]).forEach(p => { if (p.me) meP.push(p); }));
+    const me = { has: meP.length > 0, stats: [{ k: 'PJ', v: meP.reduce((a, p) => a + p.pj, 0) }, { k: 'Goles', v: meP.reduce((a, p) => a + p.g, 0) }, { k: 'Tarjetas', v: meP.reduce((a, p) => a + p.yc + p.rc, 0) }],
+      open: () => this.go('team', { teamName: ME_TEAMS.find(n => s.mine.includes(n)), teamTab: 'plantilla' }) };
+
+    const teamCards = s.mine.map(n => { const { e, G, pos, row, ms } = this.teamStats(n); const nx = ms.map(m => this.eff(m)).filter(m => !m.played).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))[0];
+      return { name: n, short: initials(n), color: e.color, div: G.div, group: G.group, mod: G.mod, pos, pts: row.pts, form: this.formOf(n, 5),
+        nextLabel: nx ? 'Próximo: ' + fmtShort(nx.date) + ' · ' + nx.time : 'Sin partidos', open: () => this.openTeam(n) }; });
+
+    // notifications
+    const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'ahora' : m < 60 ? 'hace ' + m + ' min' : 'hace ' + Math.round(m / 60) + ' h'; };
+    const notifList = [
+      ...s.notifs.map(n => ({ icon: '!', iconBg: '#F2C84B', iconFg: '#151515', title: n.title, text: n.text, when: ago(n.at), bg: n.at > s.readAt ? '#FFFBEA' : '#fff', open: () => this.openMatch(n.matchId) })),
+      ...(future[0] ? [{ icon: '⏱', iconBg: '#151515', iconFg: '#fff', title: 'Recordatorio', text: 'Convocatoria ' + future[0].callTime + ' · ' + future[0].vsLabel + ' (' + future[0].dateShort + ')', when: 'programado', bg: '#fff', open: future[0].open }] : []),
+      ...past.slice(0, 4).map(m => ({ icon: m.res, iconBg: m.resBg, iconFg: '#fff', title: 'Acta publicada', text: m.home + ' ' + m.score + ' ' + m.away, when: m.dateShort, bg: '#fff', open: m.open })),
+    ];
+    const unread = s.notifs.filter(n => n.at > s.readAt).length;
+
+    // agenda
+    const mBase = new Date(td.getFullYear(), td.getMonth() + s.calOffset, 1);
+    const startOff = (mBase.getDay() + 6) % 7, daysIn = new Date(mBase.getFullYear(), mBase.getMonth() + 1, 0).getDate();
+    const nCells = Math.ceil((startOff + daysIn) / 7) * 7;
+    const cells = Array.from({ length: nCells }, (_, i) => { const d = new Date(mBase); d.setDate(1 - startOff + i); const k = iso(d);
+      const dm = mm.filter(m => m.date === k), sel = s.selDay === k, out = d.getMonth() !== mBase.getMonth();
+      return { d: d.getDate(), dots: dm.map(m => ({ c: m.color })), bg: sel ? '#151515' : 'transparent', fg: sel ? '#fff' : out ? '#C9C3B6' : '#151515',
+        ring: k === today && !sel ? 'inset 0 0 0 1.5px #151515' : 'none', pick: () => this.setState({ selDay: sel ? null : k }) }; });
+    const src = s.selDay ? mm.filter(m => m.date === s.selDay) : future.slice(0, 12);
+    const groups = []; src.forEach(m => { let g = groups.find(x => x.date === m.date); if (!g) { g = { date: m.date, label: m.dateLong, items: [] }; groups.push(g); } g.items.push(m); });
+    groups.forEach(g => { const p = g.items.filter(i => i.pending); g.clash = p.length > 1; g.clashText = g.clash ? 'Choque · ' + gapTxt(Math.abs(toMin(p[1].time) - toMin(p[0].time))) + ' de margen' : ''; });
+
+    // explore
+    const q = norm(s.query.trim()), chipOk = sec => s.chip === 'Todos' || sec === s.chip;
+    const tr = q.length >= 2 ? DIR.list.filter(t => chipOk(t.section) && q.split(/\s+/).every(w => t.key.includes(w))) : [];
+    const groupsArr = Object.values(DIR.groups);
+    const cr = q.length >= 2 ? groupsArr.filter(g => chipOk(g.section) && q.split(/\s+/).every(w => norm(g.div + ' ' + g.group + ' ' + g.cat).includes(w))).slice(0, 5) : [];
+    const compRow = g => { const mineT = s.mine.find(n => DIR.teams[n] && DIR.teams[n].gid === g.gid); return { name: g.div + ' · ' + g.group, sub: g.teams.length + ' equipos · ' + g.mod + ' · ' + g.cat, mine: !!mineT, mineColor: mineT ? this.color(mineT) : 'transparent', open: () => this.openComp(g.gid) }; };
+    const sections = ['Fútbol 11', 'Fútbol base', 'Femenino', 'Veteranos', 'Fútbol sala'];
+    const browse = sections.filter(chipOk).map(sec => ({ title: sec, comps: groupsArr.filter(g => g.section === sec).map(compRow) }));
+    if (s.chip === 'Todos') { const myG = [...new Set(s.mine.map(n => DIR.teams[n] && DIR.teams[n].gid).filter(Boolean))]; if (myG.length) browse.unshift({ title: 'Tus competiciones', comps: myG.map(g => compRow(DIR.groups[g])) }); }
+
+    // add
+    const IG = s.importGid ? DIR.groups[s.importGid] : null;
+    const onT = '#fff', offT = '#8A857A';
+    const tabKey = screen === 'agenda' ? 'agenda' : screen === 'explore' || screen === 'comp' ? 'explore' : screen === 'teams' || screen === 'team' ? 'teams' : 'home';
+    const secs = Math.round((Date.now() - s.lastSync) / 60000);
+    const seg = (list, cur, set) => list.map(([k, label]) => ({ label, bg: cur === k ? '#fff' : 'transparent', pick: () => this.setState(set(k)) }));
+
+    return {
+      scrollRef: this.scrollRef, todayLabel: DOWL[td.getDay()] + ' ' + td.getDate() + ' ' + MON[td.getMonth()],
+      isHome: screen === 'home', isTeams: screen === 'teams', isTeam: screen === 'team', isMatch: screen === 'match', isAgenda: screen === 'agenda', isAdd: screen === 'add',
+      isExplore: screen === 'explore', isComp: screen === 'comp', isNotifs: screen === 'notifs',
+      syncLabel: s.sync === 'syncing' ? 'Sincronizando con fcf.cat…' : 'Sincronizado con fcf.cat · ' + (secs < 1 ? 'ahora' : 'hace ' + secs + ' min'),
+      syncDot: s.sync === 'syncing' ? '#F2C84B' : '#1F8A4C', spinAnim: s.sync === 'syncing' ? 'spin 0.8s linear infinite' : 'none', refresh: () => this.sync(false),
+      hasUnread: unread > 0, unreadCount: unread, goNotifs: () => this.go('notifs', { readAt: Date.now() }),
+      next: future[0] || null, conflict, me, upcoming: future.slice(0, 4), recent: past.slice(0, 6),
+      teamCards, teamCount: s.mine.length + (s.mine.length === 1 ? ' equipo' : ' equipos'),
+      T: screen === 'team' && DIR.teams[s.teamName] ? this.vmTeam(s.teamName) : {},
+      teamTabs: seg([['resumen', 'Resumen'], ['partidos', 'Partidos'], ['plantilla', 'Plantilla']], s.teamTab, k => ({ teamTab: k })),
+      tResumen: s.teamTab === 'resumen', tPartidos: s.teamTab === 'partidos', tPlantilla: s.teamTab === 'plantilla',
+      C: screen === 'comp' && s.gid ? this.vmComp(s.gid) : {},
+      compTabs: seg([['tabla', 'Clasificación'], ['jornadas', 'Jornadas'], ['stats', 'Estadísticas']], s.compTab, k => ({ compTab: k })),
+      cTabla: s.compTab === 'tabla', cJornadas: s.compTab === 'jornadas', cStats: s.compTab === 'stats',
+      tableModes: [['all', 'General'], ['home', 'Casa'], ['away', 'Fuera']].map(([k, label]) => ({ label, bg: s.tableMode === k ? '#151515' : '#fff', fg: s.tableMode === k ? '#fff' : '#151515', border: s.tableMode === k ? '#151515' : '#DDD8CC', pick: () => this.setState({ tableMode: k }) })),
+      M: screen === 'match' && s.matchId ? this.vmMatch(s.matchId) : {},
+      share: () => this.flash('Enlace del partido copiado para el grupo del equipo'),
+      notifList, prefRows: PREF_DEFS.map(([k, label, sub]) => ({ label, sub, track: s.prefs[k] ? '#1F8A4C' : '#CFCABD', justify: s.prefs[k] ? 'flex-end' : 'flex-start', toggle: () => this.setState(st => ({ prefs: { ...st.prefs, [k]: !st.prefs[k] } })) })),
+      cells, monthLabel: MONL[mBase.getMonth()] + ' ' + String(mBase.getFullYear()).slice(2), prevMonth: () => this.setState(st => ({ calOffset: st.calOffset - 1, selDay: null })), nextMonth: () => this.setState(st => ({ calOffset: st.calOffset + 1, selDay: null })),
+      agendaGroups: groups, agendaEmpty: groups.length === 0, hasSel: !!s.selDay, agendaTitle: s.selDay ? fmtShort(s.selDay) : 'Próximos partidos', clearSel: () => this.setState({ selDay: null }),
+      calTrack: s.calSync ? '#1F8A4C' : '#CFCABD', calJustify: s.calSync ? 'flex-end' : 'flex-start',
+      toggleCalSync: () => { this.setState({ calSync: !s.calSync }); if (!s.calSync) this.flash('Calendario conectado · ' + future.length + ' partidos añadidos'); },
+      dirCount: DIR.list.length, compCount: groupsArr.length, query: s.query, hasQuery: q.length >= 2, onQuery: e => this.setState({ query: e.target.value }), clearQuery: () => this.setState({ query: '' }),
+      chips: ['Todos', ...sections].map(c => ({ label: c, bg: s.chip === c ? '#151515' : '#fff', fg: s.chip === c ? '#fff' : '#151515', border: s.chip === c ? '#151515' : '#DDD8CC', pick: () => this.setState({ chip: c }) })),
+      searchNone: q.length >= 2 && !tr.length && !cr.length, hasTeamResults: tr.length > 0, hasCompResults: cr.length > 0,
+      resultCount: tr.length > 30 ? 'Equipos · mostrando 30 de ' + tr.length : tr.length + (tr.length === 1 ? ' equipo' : ' equipos'),
+      teamResults: tr.slice(0, 30).map(t => { const G = DIR.groups[t.gid]; return { name: t.name, short: initials(t.name), color: this.color(t.name), sub: G.div + ' · ' + G.group + ' · ' + G.mod, mine: s.mine.includes(t.name), open: () => this.openTeam(t.name) }; }),
+      compResults: cr.map(compRow), showBrowse: q.length < 2, browse,
+      clubResults: (() => { const by = {}; tr.forEach(t => (by[t.club] = by[t.club] || []).push(t)); return Object.entries(by).filter(([, ts]) => ts.length >= 3).slice(0, 2).map(([club, ts]) => {
+        const all = DIR.list.filter(t => t.club === club).map(t => t.name), allMine = all.every(n => s.mine.includes(n));
+        return { name: club, short: initials(club), color: this.color(all[0]), sub: all.length + ' equipos federados · temporada 2026‑27', followLabel: allMine ? 'Siguiendo todo el club ✓' : '+ Añadir todos a mis equipos', followBg: allMine ? '#E7E3D9' : '#151515', followFg: allMine ? '#151515' : '#fff',
+          teams: all.map(n => { const G = DIR.groups[DIR.teams[n].gid]; return { name: n.replace(club, '').trim() || 'Primer equipo', sub: G.div + ' · ' + G.group, mine: s.mine.includes(n), open: () => this.openTeam(n) }; }),
+          followAll: () => { this.setState(st => ({ mine: allMine ? st.mine.filter(n => !all.includes(n)) : [...st.mine, ...all.filter(n => !st.mine.includes(n))] })); this.flash(allMine ? club + ' quitado de tus equipos' : all.length + ' equipos de ' + club + ' añadidos'); } }; }); })(),
+      stepInput: s.addStep === 'input', stepLoading: s.addStep === 'loading', stepPick: s.addStep === 'pick',
+      url: s.url, urlError: s.urlError, onUrl: e => this.setState({ url: e.target.value, urlError: null }), paste: () => this.setState({ url: SAMPLE_URL, urlError: null }), startImport: this.startImport,
+      loadLines: IG ? ['Conectando con fcf.cat', IG.div + ' · ' + IG.group, IG.teams.length + ' equipos detectados', (IG.teams.length - 1) * 2 + ' jornadas, campos y horarios'].slice(0, s.loadN) : [], loadPct: s.loadN * 25 + '%',
+      importComp: IG ? { name: IG.div + ' · ' + IG.group, sub: IG.teams.length + ' equipos · ' + IG.mod + ' · ' + IG.cat } : {},
+      pickList: IG ? IG.teams.map(n => ({ name: n, bg: s.pick === n ? '#F3F1EA' : '#fff', ring: s.pick === n ? '#151515' : '#CFCABD', dot: s.pick === n ? '#151515' : 'transparent', pick: () => this.setState({ pick: n }) })) : [],
+      confirmBg: s.pick ? '#151515' : '#BDB7A9',
+      confirmTeam: () => { const n = s.pick; if (!n) return; this.setState(st => ({ mine: st.mine.includes(n) ? st.mine : [...st.mine, n], screen: 'home', stack: [], addStep: 'input', url: '', pick: null }), () => this.scrollTop()); this.flash(n + ' añadido · calendario completo importado'); },
+      toast: s.toast, toastIcon: s.toastKind === 'warn' ? '!' : '✓', toastColor: s.toastKind === 'warn' ? '#F2C84B' : '#7FD39B',
+      back: this.back, stop: e => e.stopPropagation(), goAdd: () => this.go('add', { addStep: 'input', urlError: null }),
+      tabHome: () => this.tab('home'), tabAgenda: () => this.tab('agenda'), tabExplore: () => this.tab('explore'), tabTeams: () => this.tab('teams'),
+      tcHome: tabKey === 'home' ? onT : offT, tcAgenda: tabKey === 'agenda' ? onT : offT, tcExplore: tabKey === 'explore' ? onT : offT, tcTeams: tabKey === 'teams' ? onT : offT,
+    };
+  }
+}
+</script>
+</body>
+</html>

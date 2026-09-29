@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#E7E3D9;font-family:Archivo,system-ui,sans-serif;color:#151515}a{color:#151515;text-decoration:none}a:hover{color:#C8342B}input::placeholder{color:#A39E92}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-wrap:wrap;gap:56px;align-items:center;justify-content:center;padding:48px 32px;box-sizing:border-box">
+  <div style="max-width:300px;display:flex;flex-direction:column;gap:18px">
+    <div style="font:800 56px/0.9 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:-0.01em">Convocat</div>
+    <div style="font:400 15px/1.5 Archivo,sans-serif;color:#5E5A51;text-wrap:pretty">Pegas el enlace de una competición de la FCF y la app monta calendario, clasificación, campos y horarios de todos tus equipos en un solo sitio.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font:500 13px/1.45 Archivo,sans-serif;color:#3B3832;border-top:1px solid #CFCABD;padding-top:16px">
+      <div>① Pulsa <b>+</b> en Inicio y pega un enlace (o usa «Pegar ejemplo»).</div>
+      <div>② Elige tu equipo de la lista detectada.</div>
+      <div>③ Mira cómo aparece en Inicio y en Calendario, con aviso de choques de horario.</div>
+    </div>
+    <div style="font:500 12px/1.45 Archivo,sans-serif;color:#8A857A">Datos de ejemplo · temporada 2026‑27. Hora de convocatoria = inicio − calentamiento (ajustable en Tweaks).</div>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+  <div style="height:100%;position:relative;background:#F3F1EA;display:flex;flex-direction:column;font-family:Archivo,sans-serif;color:#151515">
+    <div ref="{{ scrollRef }}" style="flex:1;overflow-y:auto;padding:58px 0 110px">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div style="padding:6px 20px 0;display:flex;justify-content:space-between;align-items:flex-end">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#8A857A">Martes 29 sept</div>
+              <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Tu semana</div>
+            </div>
+            <button onClick="{{ goAdd }}" style="width:44px;height:44px;border-radius:22px;border:none;background:#151515;color:#fff;font:400 26px/1 Archivo,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#C8342B">+</button>
+          </div>
+
+          <sc-if value="{{ next }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:0 16px">
+            <div onClick="{{ next.open }}" style="background:#151515;color:#fff;border-radius:22px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:18px;cursor:pointer;position:relative;overflow:hidden">
+              <div style="position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:80px;border:1px solid rgba(255,255,255,0.08)"></div>
+              <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.07)"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;position:relative">
+                <div style="display:flex;align-items:center;gap:8px;font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#CFCABD">
+                  <span style="width:8px;height:8px;border-radius:4px;background:{{ next.color }}"></span>{{ next.teamName }} · {{ next.comp }}
+                </div>
+                <div style="font:700 13px 'Barlow Condensed',sans-serif;letter-spacing:0.06em;color:#8A857A">J{{ next.j }}</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;position:relative">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+                  <div style="width:52px;height:52px;border-radius:14px;background:{{ next.hBg }};color:{{ next.hFg }};display:flex;align-items:center;justify-content:center;font:800 20px 'Barlow Condensed',sans-serif">{{ next.hShort }}</div>
+                  <div style="font:600 13px/1.2 Archivo,sans-serif">{{ next.homeName }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+                  <div style="font:800 46px/1 'Barlow Condensed',sans-serif;letter-spacing:-0.01em">{{ next.time }}</div>
+                  <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A">{{ next.dateShort }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+                  <div style="width:52px;height:52px;border-radius:14px;background:{{ next.aBg }};color:{{ next.aFg }};display:flex;align-items:center;justify-content:center;font:800 20px 'Barlow Condensed',sans-serif">{{ next.aShort }}</div>
+                  <div style="font:600 13px/1.2 Archivo,sans-serif">{{ next.awayName }}</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;position:relative;border-top:1px solid rgba(255,255,255,0.12);padding-top:14px">
+                <div style="display:flex;justify-content:space-between;font:600 14px Archivo,sans-serif"><span>{{ next.venue }}</span><span style="color:#F2C84B">{{ next.inDays }}</span></div>
+                <div style="font:400 13px Archivo,sans-serif;color:#A39E92">Convocatoria {{ next.callTime }} · {{ next.surface }}</div>
+              </div>
+              <div style="display:flex;gap:8px;position:relative">
+                <div style="flex:1;height:44px;border-radius:12px;background:{{ next.attBg }};color:{{ next.attFg }};display:flex;align-items:center;justify-content:center;font:600 14px Archivo,sans-serif">{{ next.attLabel }}</div>
+                <a href="{{ next.mapUrl }}" target="_blank" onClick="{{ stop }}" style="flex:1;height:44px;border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;font:600 14px Archivo,sans-serif">Cómo llegar ↗</a>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ conflict }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ conflict.open }}" style="margin:0 16px;padding:14px 16px;border-radius:16px;background:#F2C84B;display:flex;gap:12px;align-items:center;cursor:pointer">
+              <div style="font:800 26px/1 'Barlow Condensed',sans-serif">!</div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font:700 14px Archivo,sans-serif">Doble partido el {{ conflict.day }}</div>
+                <div style="font:400 13px/1.35 Archivo,sans-serif;color:#3B3218">{{ conflict.text }}</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px">
+              <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em">Próximos</div>
+              <div onClick="{{ goAgendaTab }}" style="font:600 13px Archivo,sans-serif;color:#77736A;cursor:pointer">Calendario →</div>
+            </div>
+            <div style="background:#fff;border-radius:18px;overflow:hidden">
+              <sc-for list="{{ upcoming }}" as="m" hint-placeholder-count="4">
+                <div onClick="{{ m.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                  <div style="width:44px;display:flex;flex-direction:column;align-items:center">
+                    <div style="font:600 10px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A">{{ m.dow }}</div>
+                    <div style="font:800 24px/1 'Barlow Condensed',sans-serif">{{ m.dnum }}</div>
+                  </div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                    <div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.vsLabel }}</div>
+                    <div style="display:flex;align-items:center;gap:6px;font:400 12px Archivo,sans-serif;color:#77736A"><span style="width:7px;height:7px;border-radius:4px;background:{{ m.color }}"></span>{{ m.teamName }} · {{ m.side }}</div>
+                  </div>
+                  <div style="font:700 18px 'Barlow Condensed',sans-serif">{{ m.time }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px">
+            <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em;padding:0 4px">Últimos resultados</div>
+            <div style="display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px">
+              <sc-for list="{{ recent }}" as="m" hint-placeholder-count="3">
+                <div onClick="{{ m.open }}" style="flex:none;width:150px;background:#fff;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;cursor:pointer">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="font:600 11px Archivo,sans-serif;color:#8A857A">{{ m.dateShort }}</div>
+                    <div style="width:22px;height:22px;border-radius:6px;background:{{ m.resBg }};color:#fff;font:700 13px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ m.res }}</div>
+                  </div>
+                  <div style="font:800 32px/1 'Barlow Condensed',sans-serif">{{ m.score }}</div>
+                  <div style="font:500 12px/1.3 Archivo,sans-serif;color:#3B3832">vs {{ m.opp }}</div>
+                  <div style="display:flex;align-items:center;gap:6px;font:400 11px Archivo,sans-serif;color:#77736A"><span style="width:7px;height:7px;border-radius:4px;background:{{ m.color }}"></span>{{ m.teamName }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTeams }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px;padding:6px 16px 0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 4px">
+            <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Equipos</div>
+            <div style="font:600 13px Archivo,sans-serif;color:#77736A">{{ teamCount }} competiciones</div>
+          </div>
+          <sc-for list="{{ teamCards }}" as="t" hint-placeholder-count="2">
+            <div onClick="{{ t.open }}" style="background:#fff;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:14px;cursor:pointer" style-hover="box-shadow:0 6px 20px rgba(0,0,0,0.06)">
+              <div style="display:flex;gap:12px;align-items:center">
+                <div style="width:48px;height:48px;border-radius:14px;background:{{ t.color }};color:#fff;display:flex;align-items:center;justify-content:center;font:800 20px 'Barlow Condensed',sans-serif">{{ t.short }}</div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                  <div style="font:700 16px Archivo,sans-serif">{{ t.name }}</div>
+                  <div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ t.comp }} · {{ t.group }} · {{ t.cat }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end">
+                  <div style="font:800 34px/0.9 'Barlow Condensed',sans-serif">{{ t.pos }}º</div>
+                  <div style="font:600 11px Archivo,sans-serif;color:#8A857A">{{ t.pts }} pts</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #EFECE4;padding-top:12px">
+                <div style="display:flex;gap:4px">
+                  <sc-for list="{{ t.form }}" as="f" hint-placeholder-count="3">
+                    <div style="width:22px;height:22px;border-radius:6px;background:{{ f.bg }};color:#fff;font:700 13px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ f.r }}</div>
+                  </sc-for>
+                </div>
+                <div style="font:500 12px Archivo,sans-serif;color:#3B3832">{{ t.nextLabel }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div onClick="{{ goAdd }}" style="border:1.5px dashed #BDB7A9;border-radius:20px;padding:18px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#5E5A51" style-hover="border-color:#151515;color:#151515">
+            <div style="width:48px;height:48px;border-radius:14px;background:#E7E3D9;display:flex;align-items:center;justify-content:center;font:400 26px Archivo,sans-serif">+</div>
+            <div style="display:flex;flex-direction:column;gap:2px"><div style="font:700 15px Archivo,sans-serif">Añadir competición</div><div style="font:400 12px Archivo,sans-serif">Pega un enlace de fcf.cat</div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTeam }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:-58px">
+          <div style="background:{{ team.color }};color:#fff;padding:62px 20px 20px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden">
+            <div style="position:absolute;right:-30px;bottom:-60px;font:800 180px/1 'Barlow Condensed',sans-serif;color:rgba(255,255,255,0.1)">{{ team.short }}</div>
+            <button onClick="{{ back }}" style="align-self:flex-start;height:36px;padding:0 14px;border-radius:18px;border:none;background:rgba(255,255,255,0.18);color:#fff;font:600 13px Archivo,sans-serif;cursor:pointer">← Atrás</button>
+            <div style="display:flex;flex-direction:column;gap:4px;position:relative">
+              <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;opacity:0.8">{{ team.comp }} · {{ team.group }}</div>
+              <div style="font:800 40px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">{{ team.name }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative">
+              <sc-for list="{{ team.stats }}" as="s" hint-placeholder-count="4">
+                <div style="background:rgba(0,0,0,0.16);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column">
+                  <div style="font:800 26px/1 'Barlow Condensed',sans-serif">{{ s.v }}</div>
+                  <div style="font:600 10px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;opacity:0.8">{{ s.k }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="margin:0 16px;background:#E7E3D9;border-radius:14px;padding:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px">
+            <button onClick="{{ tabPartidos }}" style="height:38px;border:none;border-radius:10px;background:{{ tabPBg }};font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">Partidos</button>
+            <button onClick="{{ tabTabla }}" style="height:38px;border:none;border-radius:10px;background:{{ tabTBg }};font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">Clasificación</button>
+          </div>
+          <sc-if value="{{ showPartidos }}" hint-placeholder-val="{{ true }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden">
+              <sc-for list="{{ team.matches }}" as="m" hint-placeholder-count="6">
+                <div onClick="{{ m.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                  <div style="width:30px;font:700 13px 'Barlow Condensed',sans-serif;color:#8A857A">J{{ m.j }}</div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                    <div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.opp }}</div>
+                    <div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ m.dateShort }} · {{ m.side }}</div>
+                  </div>
+                  <sc-if value="{{ m.played }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="font:800 20px 'Barlow Condensed',sans-serif">{{ m.score }}</div>
+                      <div style="width:22px;height:22px;border-radius:6px;background:{{ m.resBg }};color:#fff;font:700 13px 'Barlow Condensed',sans-serif;display:flex;align-items:center;justify-content:center">{{ m.res }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.pending }}" hint-placeholder-val="{{ true }}">
+                    <div style="font:700 18px 'Barlow Condensed',sans-serif;padding:3px 8px;border-radius:8px;background:#F3F1EA">{{ m.time }}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showTabla }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden;padding:6px 0">
+              <div style="display:grid;grid-template-columns:28px 1fr 32px 38px 38px;gap:6px;padding:8px 14px;font:600 10px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A"><div>#</div><div>Equipo</div><div style="text-align:right">PJ</div><div style="text-align:right">DG</div><div style="text-align:right">Pts</div></div>
+              <sc-for list="{{ team.table }}" as="r" hint-placeholder-count="8">
+                <div style="display:grid;grid-template-columns:28px 1fr 32px 38px 38px;gap:6px;padding:10px 14px;background:{{ r.bg }};font:{{ r.weight }} 14px Archivo,sans-serif;align-items:center">
+                  <div style="font:700 16px 'Barlow Condensed',sans-serif">{{ r.pos }}</div>
+                  <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                  <div style="text-align:right;color:#77736A">{{ r.pj }}</div>
+                  <div style="text-align:right;color:#77736A">{{ r.dg }}</div>
+                  <div style="text-align:right;font:800 17px 'Barlow Condensed',sans-serif">{{ r.pts }}</div>
+                </div>
+              </sc-for>
+              <div style="padding:10px 14px 6px;font:500 12px Archivo,sans-serif;color:#8A857A">Sincronizado con fcf.cat · hace 12 min</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMatch }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:-58px">
+          <div style="background:#151515;color:#fff;padding:62px 20px 24px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <button onClick="{{ back }}" style="height:36px;padding:0 14px;border-radius:18px;border:none;background:rgba(255,255,255,0.12);color:#fff;font:600 13px Archivo,sans-serif;cursor:pointer">← Atrás</button>
+              <div style="display:flex;align-items:center;gap:8px;font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#CFCABD"><span style="width:8px;height:8px;border-radius:4px;background:{{ match.color }}"></span>{{ match.comp }} · J{{ match.j }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+                <div style="width:60px;height:60px;border-radius:16px;background:{{ match.hBg }};color:{{ match.hFg }};display:flex;align-items:center;justify-content:center;font:800 24px 'Barlow Condensed',sans-serif">{{ match.hShort }}</div>
+                <div style="font:600 14px/1.2 Archivo,sans-serif">{{ match.homeName }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+                <div style="font:800 54px/1 'Barlow Condensed',sans-serif">{{ match.center }}</div>
+                <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8A857A">{{ match.centerSub }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+                <div style="width:60px;height:60px;border-radius:16px;background:{{ match.aBg }};color:{{ match.aFg }};display:flex;align-items:center;justify-content:center;font:800 24px 'Barlow Condensed',sans-serif">{{ match.aShort }}</div>
+                <div style="font:600 14px/1.2 Archivo,sans-serif">{{ match.awayName }}</div>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ match.pending }}" hint-placeholder-val="{{ true }}">
+            <div style="margin:0 16px;background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px">
+              <div style="font:700 13px Archivo,sans-serif">¿Vas a este partido?</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+                <sc-for list="{{ match.attOpts }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.pick }}" style="height:44px;border-radius:12px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }};font:600 14px Archivo,sans-serif;cursor:pointer">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="margin:0 16px;background:#fff;border-radius:18px;overflow:hidden">
+            <sc-for list="{{ match.rows }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex;justify-content:space-between;gap:16px;padding:13px 14px;border-bottom:1px solid #EFECE4">
+                <div style="font:500 13px Archivo,sans-serif;color:#77736A;flex:none">{{ r.k }}</div>
+                <div style="font:600 14px Archivo,sans-serif;text-align:right">{{ r.v }}</div>
+              </div>
+            </sc-for>
+            <div style="height:120px;background:repeating-linear-gradient(135deg,#EFECE4 0 10px,#F7F5EF 10px 20px);display:flex;align-items:center;justify-content:center;font:500 11px ui-monospace,Menlo,monospace;color:#8A857A">mapa del campo</div>
+          </div>
+
+          <div style="margin:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <a href="{{ match.mapUrl }}" target="_blank" style="height:48px;border-radius:14px;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font:600 14px Archivo,sans-serif">Cómo llegar ↗</a>
+            <button onClick="{{ addCal }}" style="height:48px;border-radius:14px;border:1px solid #CFCABD;background:transparent;font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">Añadir a calendario</button>
+          </div>
+          <a href="{{ match.fcfUrl }}" target="_blank" style="margin:0 16px;text-align:center;font:500 12px Archivo,sans-serif;color:#8A857A">Ver acta en fcf.cat ↗</a>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAgenda }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;padding:6px 16px 0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 4px">
+            <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Calendario</div>
+            <div style="font:600 13px Archivo,sans-serif;color:#77736A">Oct 2026</div>
+          </div>
+          <div style="background:#fff;border-radius:20px;padding:12px 10px">
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);font:600 10px Archivo,sans-serif;letter-spacing:0.08em;color:#8A857A;text-align:center;padding-bottom:6px"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px">
+              <sc-for list="{{ cells }}" as="c" hint-placeholder-count="35">
+                <div onClick="{{ c.pick }}" style="height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer">
+                  <div style="width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.ring }};font:700 16px 'Barlow Condensed',sans-serif">{{ c.d }}</div>
+                  <div style="display:flex;gap:2px;height:5px">
+                    <sc-for list="{{ c.dots }}" as="dot" hint-placeholder-count="0">
+                      <span style="width:5px;height:5px;border-radius:3px;background:{{ dot.c }}"></span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px">
+            <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em">{{ agendaTitle }}</div>
+            <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}"><div onClick="{{ clearSel }}" style="font:600 13px Archivo,sans-serif;color:#77736A;cursor:pointer">Ver todo</div></sc-if>
+          </div>
+          <sc-if value="{{ agendaEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:24px;text-align:center;font:500 14px Archivo,sans-serif;color:#8A857A;background:#fff;border-radius:18px">Día libre. Sin partidos.</div>
+          </sc-if>
+          <sc-for list="{{ agendaGroups }}" as="g" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 4px">
+                <div style="font:600 12px Archivo,sans-serif;letter-spacing:0.06em;text-transform:uppercase;color:#5E5A51">{{ g.label }}</div>
+                <sc-if value="{{ g.clash }}" hint-placeholder-val="{{ false }}"><div style="font:700 11px Archivo,sans-serif;padding:3px 8px;border-radius:10px;background:#F2C84B">{{ g.clashText }}</div></sc-if>
+              </div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <sc-for list="{{ g.items }}" as="m" hint-placeholder-count="1">
+                  <div onClick="{{ m.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer" style-hover="background:#FAF8F3">
+                    <div style="display:flex;flex-direction:column;align-items:center;width:48px">
+                      <div style="font:800 20px/1 'Barlow Condensed',sans-serif">{{ m.time }}</div>
+                      <div style="font:500 10px Archivo,sans-serif;color:#8A857A">conv. {{ m.callTime }}</div>
+                    </div>
+                    <div style="width:3px;align-self:stretch;border-radius:2px;background:{{ m.color }}"></div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                      <div style="font:600 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.vsLabel }}</div>
+                      <div style="font:400 12px Archivo,sans-serif;color:#77736A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.venue }}</div>
+                    </div>
+                    <div style="font:700 12px 'Barlow Condensed',sans-serif;color:#fff;background:{{ m.color }};padding:3px 6px;border-radius:6px">{{ m.teamShort }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px;padding:6px 16px 0">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <button onClick="{{ back }}" style="height:36px;padding:0 14px;border-radius:18px;border:none;background:#E7E3D9;color:#151515;font:600 13px Archivo,sans-serif;cursor:pointer">← Cancelar</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;padding:0 4px">
+            <div style="font:800 38px/0.95 'Barlow Condensed',sans-serif;text-transform:uppercase">Añadir competición</div>
+            <div style="font:400 14px/1.45 Archivo,sans-serif;color:#5E5A51">Pega el enlace de calendario, clasificación o resultados de fcf.cat.</div>
+          </div>
+
+          <sc-if value="{{ showModeSwitch }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#E7E3D9;border-radius:14px;padding:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px">
+              <button onClick="{{ modeLink }}" style="height:38px;border:none;border-radius:10px;background:{{ modeLinkBg }};font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">Pegar enlace</button>
+              <button onClick="{{ modeSearch }}" style="height:38px;border:none;border-radius:10px;background:{{ modeSearchBg }};font:600 14px Archivo,sans-serif;color:#151515;cursor:pointer">Buscar equipo</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepSearch }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="background:#fff;border-radius:16px;padding:0 14px;display:flex;align-items:center;gap:10px;border:1.5px solid #151515">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#77736A" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+                <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Nombre del club o equipo" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font:500 15px Archivo,sans-serif;color:#151515;height:52px">
+              </div>
+              <sc-if value="{{ searchHint }}" hint-placeholder-val="{{ true }}">
+                <div style="font:400 13px/1.45 Archivo,sans-serif;color:#77736A;padding:0 4px">Busca entre todos los equipos inscritos en la FCF esta temporada. Escribe al menos 2 letras.</div>
+              </sc-if>
+              <sc-if value="{{ searchNone }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:22px;text-align:center;font:500 14px Archivo,sans-serif;color:#8A857A;background:#fff;border-radius:18px">Ningún equipo coincide con «{{ query }}».</div>
+              </sc-if>
+              <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ false }}">
+                <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#8A857A;padding:0 4px">{{ resultCount }}</div>
+                <div style="background:#fff;border-radius:18px;overflow:hidden">
+                  <sc-for list="{{ results }}" as="r" hint-placeholder-count="4">
+                    <div onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #EFECE4;cursor:pointer;background:{{ r.bg }}">
+                      <div style="width:40px;height:40px;border-radius:12px;background:#E6E2D8;color:#151515;display:flex;align-items:center;justify-content:center;font:800 16px 'Barlow Condensed',sans-serif;flex:none">{{ r.short }}</div>
+                      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                        <div style="font:600 14px Archivo,sans-serif">{{ r.name }}</div>
+                        <div style="font:400 12px Archivo,sans-serif;color:#77736A">{{ r.comp }} · {{ r.group }} · {{ r.cat }}</div>
+                      </div>
+                      <sc-if value="{{ r.added }}" hint-placeholder-val="{{ false }}"><div style="font:600 11px Archivo,sans-serif;color:#8A857A">Ya añadido</div></sc-if>
+                      <sc-if value="{{ r.free }}" hint-placeholder-val="{{ true }}"><div style="width:20px;height:20px;border-radius:10px;border:2px solid {{ r.ring }};background:{{ r.dot }};box-sizing:border-box;flex:none"></div></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <button onClick="{{ confirmSearch }}" style="height:52px;border-radius:16px;border:none;background:{{ searchConfirmBg }};color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer">Añadir a mis equipos</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepInput }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="background:#fff;border-radius:16px;padding:6px 6px 6px 14px;display:flex;align-items:center;gap:8px;border:1.5px solid #151515">
+                <input value="{{ url }}" onChange="{{ onUrl }}" placeholder="https://www.fcf.cat/competicio/…" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font:500 14px Archivo,sans-serif;color:#151515;height:40px">
+                <button onClick="{{ paste }}" style="height:36px;padding:0 12px;border-radius:10px;border:none;background:#E7E3D9;font:600 12px Archivo,sans-serif;color:#151515;cursor:pointer;white-space:nowrap">Pegar ejemplo</button>
+              </div>
+              <sc-if value="{{ urlError }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#FBE9E5;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <div style="font:700 14px Archivo,sans-serif;color:#9E2A1C">{{ urlErrorTitle }}</div>
+                    <div style="font:400 13px/1.4 Archivo,sans-serif;color:#5E3A33">Puedes buscar tu equipo por nombre y lo añadimos igual.</div>
+                  </div>
+                  <button onClick="{{ modeSearch }}" style="height:44px;border-radius:12px;border:none;background:#151515;color:#fff;font:600 14px Archivo,sans-serif;cursor:pointer">Buscar equipo →</button>
+                </div>
+              </sc-if>
+              <button onClick="{{ startImport }}" style="height:52px;border-radius:16px;border:none;background:#151515;color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#C8342B">Importar</button>
+              <div style="display:flex;flex-direction:column;gap:8px;padding:10px 4px 0">
+                <div style="font:600 11px Archivo,sans-serif;letter-spacing:0.1em;text-transform:uppercase;color:#8A857A">Qué importa</div>
+                <div style="font:400 13px/1.5 Archivo,sans-serif;color:#3B3832">Calendario completo, horarios, campos con dirección, resultados y clasificación. Se actualiza solo cada vez que la FCF publica cambios.</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#151515;color:#fff;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+              <div style="font:500 11px ui-monospace,Menlo,monospace;color:#8A857A;word-break:break-all">{{ url }}</div>
+              <sc-for list="{{ loadLines }}" as="l" hint-placeholder-count="1">
+                <div style="display:flex;gap:10px;align-items:center;font:500 14px Archivo,sans-serif"><span style="color:#7FD39B;font-weight:700">✓</span>{{ l }}</div>
+              </sc-for>
+              <div style="height:4px;border-radius:2px;background:rgba(255,255,255,0.12);overflow:hidden"><div style="height:100%;width:{{ loadPct }};background:#F2C84B;transition:width 0.5s"></div></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepPick }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="background:#151515;color:#fff;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:2px">
+                <div style="font:700 16px Archivo,sans-serif">Lliga Veterans F7 · Grup 1</div>
+                <div style="font:400 13px Archivo,sans-serif;color:#A39E92">14 equipos · 26 jornadas · empieza el 2 oct</div>
+              </div>
+              <div style="font:700 20px 'Barlow Condensed',sans-serif;text-transform:uppercase;padding:0 4px">¿Cuál es tu equipo?</div>
+              <div style="background:#fff;border-radius:18px;overflow:hidden">
+                <sc-for list="{{ pickList }}" as="p" hint-placeholder-count="7">
+                  <div onClick="{{ p.pick }}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid #EFECE4;cursor:pointer;background:{{ p.bg }}">
+                    <div style="font:600 14px Archivo,sans-serif">{{ p.name }}</div>
+                    <div style="width:20px;height:20px;border-radius:10px;border:2px solid {{ p.ring }};background:{{ p.dot }};box-sizing:border-box"></div>
+                  </div>
+                </sc-for>
+              </div>
+              <button onClick="{{ confirmTeam }}" style="height:52px;border-radius:16px;border:none;background:{{ confirmBg }};color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer">Añadir a mis equipos</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;top:58px;left:16px;right:16px;z-index:30;background:#151515;color:#fff;border-radius:14px;padding:12px 14px;font:600 14px Archivo,sans-serif;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)"><span style="color:#7FD39B">✓</span>{{ toast }}</div>
+    </sc-if>
+
+    <div style="position:absolute;left:16px;right:16px;bottom:30px;height:62px;border-radius:31px;background:rgba(21,21,21,0.94);display:grid;grid-template-columns:repeat(3,1fr);padding:0 6px;box-shadow:0 10px 30px rgba(0,0,0,0.18);z-index:20">
+      <button onClick="{{ tabHome }}" style="border:none;background:transparent;color:{{ tcHome }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:600 10px Archivo,sans-serif;letter-spacing:0.04em">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Inicio</button>
+      <button onClick="{{ tabAgenda }}" style="border:none;background:transparent;color:{{ tcAgenda }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:600 10px Archivo,sans-serif;letter-spacing:0.04em">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Calendario</button>
+      <button onClick="{{ tabTeams }}" style="border:none;background:transparent;color:{{ tcTeams }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:600 10px Archivo,sans-serif;letter-spacing:0.04em">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg>Equipos</button>
+    </div>
+  </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;agenda&quot;,&quot;teams&quot;,&quot;team&quot;,&quot;match&quot;,&quot;add&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;warmup&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:45,&quot;min&quot;:0,&quot;max&quot;:120,&quot;step&quot;:5,&quot;unit&quot;:&quot;min&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+const TODAY = '2026-09-29';
+const DOW = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DOWL = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MON = ['ene','feb','mar','abr','may','jun','jul','ago','sept','oct','nov','dic'];
+const RES = { V: '#1F8A4C', E: '#B5AFA2', D: '#D0402E' };
+const dt = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const between = (a, b) => Math.round((dt(b) - dt(a)) / 864e5);
+const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const fromMin = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+const initials = n => { const w = n.replace(/\b(CE|CF|UE|UD|FS|CFS|AE|UFB|PB|UA|B|Vet\.?)\b/g, '').trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[1][0] : w[0].slice(0, 2)).toUpperCase(); };
+
+const TEAMS0 = [
+  { id: 'psec', name: 'UE Poble Sec', short: 'PS', comp: 'Segona Catalana', group: 'Grup 4', cat: 'Futbol 11', color: '#C8342B',
+    table: [['CE Júpiter B',3,9,6],['AE Prat B',3,7,5],['UE Poble Sec',3,7,3],['CF Besòs Batlló',3,5,2],['UD Guinardó',3,4,0],['CE Montañesa',3,4,-1],['CF Lloreda',3,3,-2],['UFB Jàbac',3,3,-3]] },
+  { id: 'grac', name: 'FS Gràcia', short: 'FG', comp: 'Tercera Divisió', group: 'Grup 2', cat: 'Futbol sala', color: '#2350C8',
+    table: [['CFS Sant Cugat',3,9,11],['FS Montcada',3,7,6],['AE Les Corts',3,6,3],['CFS Sarrià',3,6,2],['FS Badalona B',3,4,1],['CE Vallvidrera',3,4,-1],['FS Horta',3,4,-2],['FS Gràcia',3,4,0]] },
+];
+const V_PS = ['Camp Municipal Poble Sec', 'Av. Francesc Ferrer i Guàrdia · Barcelona', 'Césped artificial'];
+const V_FG = ['Pavelló Municipal La Creueta', 'C/ de Pere Pau · Barcelona', 'Parquet'];
+const MATCHES0 = [
+  { id: 'm1', t: 'psec', j: 1, date: '2026-09-13', time: '11:00', home: true, opp: 'CE Montañesa', gf: 2, ga: 1, v: V_PS },
+  { id: 'm2', t: 'psec', j: 2, date: '2026-09-20', time: '12:30', home: false, opp: 'UD Guinardó', gf: 3, ga: 1, v: ['Camp Municipal Guinardó', 'C/ de Garriga i Roca · Barcelona', 'Césped artificial'] },
+  { id: 'm3', t: 'psec', j: 3, date: '2026-09-27', time: '11:00', home: true, opp: 'CF Besòs Batlló', gf: 0, ga: 0, v: V_PS },
+  { id: 'm4', t: 'psec', j: 4, date: '2026-10-03', time: '16:30', home: false, opp: 'CE Júpiter B', v: ['Camp Municipal Júpiter', 'C/ de Lope de Vega · Barcelona', 'Césped artificial'] },
+  { id: 'm5', t: 'psec', j: 5, date: '2026-10-11', time: '11:00', home: true, opp: 'AE Prat B', v: V_PS },
+  { id: 'm6', t: 'psec', j: 6, date: '2026-10-18', time: '10:00', home: false, opp: 'CF Lloreda', v: ['Camp Municipal Lloreda', 'C/ de Pau Piferrer · Badalona', 'Césped artificial'] },
+  { id: 'm7', t: 'psec', j: 7, date: '2026-10-25', time: '11:00', home: true, opp: 'UFB Jàbac', v: V_PS },
+  { id: 'g1', t: 'grac', j: 1, date: '2026-09-12', time: '18:00', home: false, opp: 'FS Montcada', gf: 3, ga: 5, v: ['Pavelló Miquel Poblet', 'Montcada i Reixac', 'Parquet'] },
+  { id: 'g2', t: 'grac', j: 2, date: '2026-09-19', time: '19:00', home: true, opp: 'FS Horta', gf: 4, ga: 2, v: V_FG },
+  { id: 'g3', t: 'grac', j: 3, date: '2026-09-26', time: '17:30', home: false, opp: 'AE Les Corts', gf: 3, ga: 3, v: ['Pavelló Les Corts', 'C/ de Dolors Masferrer · Barcelona', 'Parquet'] },
+  { id: 'g4', t: 'grac', j: 4, date: '2026-10-04', time: '19:00', home: true, opp: 'CFS Sant Cugat', v: V_FG },
+  { id: 'g5', t: 'grac', j: 5, date: '2026-10-10', time: '18:00', home: false, opp: 'CFS Sarrià', v: ['Pavelló Municipal Sarrià', 'C/ de Iradier · Barcelona', 'Pista sintética'] },
+  { id: 'g6', t: 'grac', j: 6, date: '2026-10-18', time: '12:30', home: true, opp: 'FS Badalona B', v: V_FG },
+  { id: 'g7', t: 'grac', j: 7, date: '2026-10-24', time: '17:00', home: false, opp: 'CE Vallvidrera', v: ['Pavelló Vallvidrera', 'Barcelona', 'Parquet'] },
+];
+const SAMPLE_URL = 'https://www.fcf.cat/calendari/2627/futbol-7/lliga-veterans/grup-1';
+const PARSED = ['CE Sants Veterans', 'CF Can Rull Vet.', 'UA Horta Veterans', 'CE Europa Vet.', 'UE Sant Andreu Vet.', 'CF La Florida Vet.', 'PB Sant Martí Vet.'];
+const DIR = [
+  ['CE Sants Veterans', 'Lliga Veterans F7', 'Grup 1', 'Futbol 7'], ['UE Sants B', 'Tercera Catalana', 'Grup 9', 'Futbol 11'],
+  ['CE Sant Gervasi', 'Segona Catalana', 'Grup 3', 'Futbol 11'], ['FS Sant Andreu', 'Segona Divisió Futbol Sala', 'Grup 1', 'Futbol sala'],
+  ['UE Sant Andreu Vet.', 'Lliga Veterans F7', 'Grup 1', 'Futbol 7'], ['CF Santa Coloma C', 'Quarta Catalana', 'Grup 12', 'Futbol 11'],
+  ['CE Europa C', 'Tercera Catalana', 'Grup 8', 'Futbol 11'], ['AE Les Corts', 'Tercera Divisió', 'Grup 2', 'Futbol sala'],
+  ['CF Can Rull Vet.', 'Lliga Veterans F7', 'Grup 1', 'Futbol 7'], ['UA Horta B', 'Segona Catalana', 'Grup 4', 'Futbol 11'],
+  ['CE Mercantil', 'Tercera Catalana', 'Grup 6', 'Futbol 11'], ['FS Montcada', 'Tercera Divisió', 'Grup 2', 'Futbol sala'],
+  ['CF La Florida Vet.', 'Lliga Veterans F7', 'Grup 1', 'Futbol 7'], ['PB Sant Martí', 'Quarta Catalana', 'Grup 10', 'Futbol 11'],
+];
+const norm = x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const LOAD = ['Conectando con fcf.cat', 'Lliga Veterans F7 · Grup 1', '14 equipos detectados', '26 jornadas y 9 campos'];
+
+class Component extends DCLogic {
+  state = { screen: null, stack: [], teamId: 'psec', matchId: 'm4', teamTab: 'partidos', att: { m4: 'si' }, teams: TEAMS0, matches: MATCHES0,
+    url: '', urlError: false, addStep: 'input', loadN: 0, pick: null, toast: null, selDay: null };
+  scrollRef = React.createRef();
+
+  cur() { return this.state.screen || this.props.startScreen || 'home'; }
+  scrollTop() { if (this.scrollRef.current) this.scrollRef.current.scrollTop = 0; }
+  go(screen, extra = {}) { this.setState(s => ({ stack: [...s.stack, { screen: this.cur(), teamId: s.teamId, matchId: s.matchId }], screen, ...extra }), () => this.scrollTop()); }
+  tab(screen) { this.setState({ screen, stack: [], addStep: 'input', selDay: null }, () => this.scrollTop()); }
+  back = () => this.setState(s => { const st = [...s.stack]; const p = st.pop() || { screen: 'home' }; return { stack: st, ...p, addStep: 'input' }; }, () => this.scrollTop());
+  flash(msg) { clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(() => this.setState({ toast: null }), 2400); }
+  componentWillUnmount() { clearTimeout(this._t); clearInterval(this._i); }
+
+  startImport = () => {
+    const url = this.state.url.trim() || SAMPLE_URL;
+    if (!/fcf\.cat/i.test(url)) { this.setState({ url, urlError: 'Ese enlace no es de fcf.cat' }); return; }
+    if (!/(calendari|competicio|classificacio|resultats)/i.test(url)) { this.setState({ url, urlError: 'No hemos podido leer este enlace' }); return; }
+    this.setState({ url, urlError: false, addStep: 'loading', loadN: 0, pick: null });
+    clearInterval(this._i);
+    this._i = setInterval(() => {
+      const n = this.state.loadN + 1;
+      if (n > LOAD.length) { clearInterval(this._i); this.setState({ addStep: 'pick' }); return; }
+      this.setState({ loadN: n });
+    }, 600);
+  };
+  confirmTeam = () => { if (this.state.pick) this.addTeam(this.state.pick, ['Lliga Veterans F7', 'Grup 1', 'Futbol 7']); };
+  confirmSearch = () => { const r = DIR.find(d => d[0] === this.state.searchPick); if (r) this.addTeam(r[0], r.slice(1)); };
+  addTeam(name, [comp, group, cat]) {
+    const id = 'imp' + Date.now();
+    const V = ['Camp Municipal Energia', 'C/ de la Mineria · Barcelona', 'Césped artificial'];
+    const rivals = DIR.filter(d => d[1] === comp && d[2] === group && d[0] !== name).map(d => d[0]);
+    const others = [...rivals, ...PARSED.filter(p => p !== name && !rivals.includes(p))];
+    const colors = ['#1F8A4C', '#7A3FB0', '#D07A1A', '#127C86'];
+    const team = { id, name, short: initials(name), comp, group, cat, color: colors[(this.state.teams.length - 2) % colors.length],
+      table: [name, ...others.slice(0, 7)].map(n => [n, 0, 0, 0]) };
+    const ms = [
+      { id: id + 'a', t: id, j: 1, date: '2026-10-02', time: '21:00', home: true, opp: others[0], v: V },
+      { id: id + 'b', t: id, j: 2, date: '2026-10-09', time: '21:30', home: false, opp: others[1], v: ['Camp Municipal Can Rull', 'Sabadell', 'Césped artificial'] },
+      { id: id + 'c', t: id, j: 3, date: '2026-10-16', time: '21:00', home: true, opp: others[2], v: V },
+    ];
+    this.setState(s => ({ teams: [...s.teams, team], matches: [...s.matches, ...ms], screen: 'home', stack: [], addStep: 'input', url: '', pick: null, query: '', searchPick: null, urlError: false }), () => this.scrollTop());
+    this.flash(name + ' añadido');
+  }
+
+  mv(m) {
+    const s = this.state, team = s.teams.find(t => t.id === m.t) || s.teams[0];
+    const played = m.gf != null, d = dt(m.date);
+    const res = played ? (m.gf > m.ga ? 'V' : m.gf < m.ga ? 'D' : 'E') : null;
+    const mine = { short: team.short, bg: team.color, fg: '#fff' }, opp = { short: initials(m.opp), bg: '#E6E2D8', fg: '#151515' };
+    const H = m.home ? mine : opp, A = m.home ? opp : mine;
+    const days = between(TODAY, m.date);
+    const warm = this.props.warmup ?? 45;
+    const att = s.att[m.id];
+    const attMap = { si: ['Voy ✓', '#7FD39B', '#0E2A18'], no: ['No voy', '#D0402E', '#fff'], duda: ['En duda', '#F2C84B', '#151515'] };
+    const a = attMap[att] || ['¿Vas? Responde', '#fff', '#151515'];
+    return {
+      ...m, color: team.color, teamName: team.name, teamShort: team.short, comp: team.comp,
+      played, pending: !played, res, resBg: RES[res],
+      homeName: m.home ? team.name : m.opp, awayName: m.home ? m.opp : team.name,
+      hShort: H.short, hBg: H.bg, hFg: H.fg, aShort: A.short, aBg: A.bg, aFg: A.fg,
+      score: played ? (m.home ? m.gf + '–' + m.ga : m.ga + '–' + m.gf) : '',
+      side: m.home ? 'Casa' : 'Fuera', vsLabel: (m.home ? 'vs ' : '@ ') + m.opp,
+      dow: DOW[d.getDay()], dnum: d.getDate(),
+      dateShort: DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()],
+      dateLong: DOWL[d.getDay()] + ', ' + d.getDate() + ' de ' + MON[d.getMonth()],
+      inDays: days === 0 ? 'Hoy' : days === 1 ? 'Mañana' : days > 0 ? 'En ' + days + ' días' : 'Jugado',
+      callTime: fromMin(toMin(m.time) - warm), venue: m.v[0], address: m.v[1], surface: m.v[2],
+      mapUrl: 'https://www.google.com/maps/search/' + encodeURIComponent(m.v[0] + ' ' + m.v[1]),
+      fcfUrl: 'https://www.fcf.cat',
+      attLabel: a[0], attBg: a[1], attFg: a[2],
+      open: () => this.go('match', { matchId: m.id }),
+    };
+  }
+
+  renderVals() {
+    const s = this.state, screen = this.cur();
+    const sorted = [...s.matches].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const future = sorted.filter(m => m.gf == null).map(m => this.mv(m));
+    const past = sorted.filter(m => m.gf != null).reverse().map(m => this.mv(m));
+
+    const byDay = {};
+    future.forEach(m => { (byDay[m.date] = byDay[m.date] || []).push(m); });
+    const clashDay = Object.keys(byDay).sort().find(k => byDay[k].length > 1);
+    let conflict = null;
+    const clashInfo = k => { const [a, b] = byDay[k]; const gap = toMin(b.time) - toMin(a.time); return { gap, text: a.teamShort + ' ' + a.time + ' · ' + b.teamShort + ' ' + b.time }; };
+    if (clashDay) {
+      const [a, b] = byDay[clashDay]; const { gap } = clashInfo(clashDay);
+      conflict = { day: a.dateShort.toLowerCase(), text: a.teamName + ' a las ' + a.time + ' y ' + b.teamName + ' a las ' + b.time + '. Solo ' + Math.floor(gap / 60) + 'h ' + (gap % 60 ? (gap % 60) + 'min ' : '') + 'de margen.', open: () => this.go('agenda', { selDay: clashDay }) };
+    }
+
+    const teamVM = t => {
+      const ms = sorted.filter(m => m.t === t.id).map(m => this.mv(m));
+      const pl = ms.filter(m => m.played);
+      const idx = t.table.findIndex(r => r[0] === t.name);
+      const row = t.table[idx] || [t.name, 0, 0, 0];
+      const nx = ms.find(m => m.pending);
+      return {
+        ...t, pos: idx + 1, pts: row[2],
+        form: pl.slice(-3).map(m => ({ r: m.res, bg: RES[m.res] })),
+        nextLabel: nx ? 'Próximo: ' + nx.dateShort + ' · ' + nx.time : 'Sin partidos',
+        matches: ms,
+        stats: [{ k: 'Pos', v: (idx + 1) + 'º' }, { k: 'Pts', v: row[2] }, { k: 'GF', v: pl.reduce((a, m) => a + m.gf, 0) }, { k: 'GC', v: pl.reduce((a, m) => a + m.ga, 0) }],
+        table: t.table.map((r, i) => ({ pos: i + 1, name: r[0], pj: r[1], pts: r[2], dg: (r[3] > 0 ? '+' : '') + r[3], bg: r[0] === t.name ? t.color + '1F' : 'transparent', weight: r[0] === t.name ? 700 : 500 })),
+        open: () => this.go('team', { teamId: t.id, teamTab: 'partidos' }),
+      };
+    };
+    const teamCards = s.teams.map(teamVM);
+    const team = teamCards.find(t => t.id === s.teamId) || teamCards[0];
+
+    const mRaw = s.matches.find(m => m.id === s.matchId) || s.matches[0];
+    const mm = this.mv(mRaw);
+    const cur = s.att[mm.id];
+    const match = {
+      ...mm, center: mm.played ? mm.score : mm.time, centerSub: mm.played ? 'Final · ' + mm.dateShort : mm.dateShort,
+      rows: [
+        { k: 'Fecha', v: mm.dateLong }, { k: 'Hora', v: mm.time },
+        ...(mm.played ? [] : [{ k: 'Convocatoria', v: mm.callTime + ' en el campo' }]),
+        { k: 'Campo', v: mm.venue }, { k: 'Dirección', v: mm.address }, { k: 'Superficie', v: mm.surface },
+      ],
+      attOpts: [['si', 'Voy'], ['duda', 'En duda'], ['no', 'No voy']].map(([k, label]) => {
+        const on = cur === k; const c = { si: '#1F8A4C', duda: '#C99A17', no: '#D0402E' }[k];
+        return { label, bg: on ? c : '#fff', fg: on ? '#fff' : '#151515', border: on ? c : '#DDD8CC', pick: () => this.setState(st => ({ att: { ...st.att, [mm.id]: k } })) };
+      }),
+    };
+
+    const start = dt('2026-09-28');
+    const cells = Array.from({ length: 35 }, (_, i) => {
+      const d = new Date(start); d.setDate(start.getDate() + i); const k = iso(d);
+      const dayMs = sorted.filter(m => m.date === k);
+      const sel = s.selDay === k, today = k === TODAY, out = d.getMonth() !== 9;
+      return { d: d.getDate(), dots: dayMs.map(m => ({ c: (s.teams.find(t => t.id === m.t) || {}).color })),
+        bg: sel ? '#151515' : 'transparent', fg: sel ? '#fff' : out ? '#BDB7A9' : '#151515', ring: today && !sel ? 'inset 0 0 0 1.5px #151515' : 'none',
+        pick: () => this.setState({ selDay: sel ? null : k }) };
+    });
+    const src = s.selDay ? sorted.filter(m => m.date === s.selDay).map(m => this.mv(m)) : future;
+    const groups = [];
+    src.forEach(m => { let g = groups.find(x => x.date === m.date); if (!g) { g = { date: m.date, label: m.dateLong, items: [] }; groups.push(g); } g.items.push(m); });
+    groups.forEach(g => { g.clash = g.items.filter(i => i.pending).length > 1; g.clashText = g.clash ? 'Choque · ' + (() => { const gap = toMin(g.items[1].time) - toMin(g.items[0].time); return Math.floor(gap / 60) + 'h' + (gap % 60 ? String(gap % 60).padStart(2, '0') : '') + ' de margen'; })() : ''; });
+
+    const on = '#fff', off = '#8A857A';
+    const tabKey = screen === 'agenda' ? 'agenda' : (screen === 'teams' || screen === 'team') ? 'teams' : 'home';
+    return {
+      scrollRef: this.scrollRef,
+      isHome: screen === 'home', isTeams: screen === 'teams', isTeam: screen === 'team', isMatch: screen === 'match', isAgenda: screen === 'agenda', isAdd: screen === 'add',
+      next: future[0] || null, conflict, upcoming: future.slice(0, 4), recent: past.slice(0, 5),
+      teamCards, teamCount: s.teams.length, team, match,
+      tabPBg: s.teamTab === 'partidos' ? '#fff' : 'transparent', tabTBg: s.teamTab === 'tabla' ? '#fff' : 'transparent',
+      showPartidos: s.teamTab === 'partidos', showTabla: s.teamTab === 'tabla',
+      tabPartidos: () => this.setState({ teamTab: 'partidos' }), tabTabla: () => this.setState({ teamTab: 'tabla' }),
+      cells, agendaGroups: groups, agendaEmpty: groups.length === 0, hasSel: !!s.selDay,
+      agendaTitle: s.selDay ? 'Día seleccionado' : 'Próximos partidos', clearSel: () => this.setState({ selDay: null }),
+      ...(() => {
+        const q = norm((s.query || '').trim()); const have = s.teams.map(t => t.name);
+        const res = q.length < 2 ? [] : DIR.filter(d => norm(d[0] + ' ' + d[1]).includes(q)).slice(0, 8);
+        return {
+          stepSearch: s.addStep === 'search', showModeSwitch: s.addStep === 'input' || s.addStep === 'search',
+          modeLinkBg: s.addStep === 'input' ? '#fff' : 'transparent', modeSearchBg: s.addStep === 'search' ? '#fff' : 'transparent',
+          modeLink: () => this.setState({ addStep: 'input' }), modeSearch: () => this.setState({ addStep: 'search', urlError: false }),
+          query: s.query || '', onQuery: e => this.setState({ query: e.target.value, searchPick: null }),
+          searchHint: q.length < 2, searchNone: q.length >= 2 && res.length === 0, hasResults: res.length > 0,
+          resultCount: res.length + (res.length === 1 ? ' resultado' : ' resultados'),
+          results: res.map(d => { const added = have.includes(d[0]), sel = s.searchPick === d[0];
+            return { name: d[0], comp: d[1], group: d[2], cat: d[3], short: initials(d[0]), added, free: !added,
+              bg: sel ? '#F3F1EA' : '#fff', ring: sel ? '#151515' : '#CFCABD', dot: sel ? '#151515' : 'transparent',
+              pick: () => { if (!added) this.setState({ searchPick: d[0] }); } }; }),
+          searchConfirmBg: s.searchPick ? '#151515' : '#BDB7A9', confirmSearch: this.confirmSearch,
+          urlErrorTitle: s.urlError || '',
+        };
+      })(),
+      stepInput: s.addStep === 'input', stepLoading: s.addStep === 'loading', stepPick: s.addStep === 'pick',
+      url: s.url, urlError: s.urlError, onUrl: e => this.setState({ url: e.target.value, urlError: false }),
+      paste: () => this.setState({ url: SAMPLE_URL, urlError: false }), startImport: this.startImport,
+      loadLines: LOAD.slice(0, s.loadN), loadPct: Math.round((s.loadN / LOAD.length) * 100) + '%',
+      pickList: PARSED.map(n => ({ name: n, bg: s.pick === n ? '#F3F1EA' : '#fff', ring: s.pick === n ? '#151515' : '#CFCABD', dot: s.pick === n ? '#151515' : 'transparent', pick: () => this.setState({ pick: n }) })),
+      confirmBg: s.pick ? '#151515' : '#BDB7A9', confirmTeam: this.confirmTeam,
+      toast: s.toast, back: this.back, stop: e => e.stopPropagation(),
+      addCal: () => this.flash('Añadido a tu calendario'),
+      goAdd: () => this.go('add', { addStep: 'input', urlError: false }), goAgendaTab: () => this.tab('agenda'),
+      tabHome: () => this.tab('home'), tabAgenda: () => this.tab('agenda'), tabTeams: () => this.tab('teams'),
+      tcHome: tabKey === 'home' ? on : off, tcAgenda: tabKey === 'agenda' ? on : off, tcTeams: tabKey === 'teams' ? on : off,
+    };
+  }
+}
+</script>
+</body>
+</html>
