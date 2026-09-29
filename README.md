@@ -1,25 +1,75 @@
-# CODING AGENTS: READ THIS FIRST
+# Convocat
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Toda la FCF en tu móvil: tus equipos, cualquier rival, clasificaciones, actas y
+estadísticas. Se sincroniza sola y avisa si cambia un horario.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+Es una app web pensada para el móvil (PWA), hecha a partir del diseño de Claude
+Design que está en `project/Convocat App v2.dc.html` (la conversación del diseño
+está en `chats/`). Se instala en el móvil desde el navegador («Añadir a pantalla
+de inicio») y, una vez cargada, funciona sin conexión.
 
-## What you should do — IMPORTANT
+## Cómo arrancarla
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+```sh
+npm install
+npm run dev        # http://localhost:5173
+npm test           # pruebas de los datos y de los modelos de vista
+npm run build      # web estática en dist/, se puede subir a cualquier hosting estático
+```
 
-**Read `project/Convocat App v2.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+## Qué incluye
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+| Pantalla | Qué hace |
+| --- | --- |
+| Inicio | Próximo partido (hora de convocatoria, campo, «¿Vas?», cómo llegar), aviso de doble partido, «Tus números», próximos partidos y últimos resultados |
+| Avisos | Cambios de horario, recordatorios y actas publicadas; ajustes de qué te avisa |
+| Calendario | Mes con un punto por equipo, filtro por día, aviso de choques, exportar al calendario del móvil (.ics) |
+| Explorar | Buscar entre unos 700 equipos y 47 grupos por club, pueblo o categoría, con filtros por modalidad; seguir un club entero de golpe |
+| Equipo | Estadísticas (goles por partido, porterías a cero, racha, casa y fuera, posición por jornada, goles por tramo, goleadores), partidos y plantilla |
+| Competición | Clasificación (general, casa y fuera), jornadas con resultados, estadísticas de la liga y pichichi |
+| Partido | Acta o previa (comparación de los dos equipos), asistencia, campo y mapa, compartir |
+| Añadir | Importar una competición desde un enlace de fcf.cat o, si falla, buscar el equipo |
 
-## About the design files
+Tus equipos, tus respuestas de asistencia, los cambios de horario y tus ajustes
+se guardan en el propio dispositivo (`localStorage`).
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+## Datos
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+Los datos son **simulados**, igual que en el diseño: una temporada 2026‑27
+generada siempre igual a partir de unas semillas (`src/data/seed.ts`), con los
+11 equipos del CE Sant Ignasi metidos en sus grupos. Los resultados, las
+clasificaciones, las actas y las estadísticas de los jugadores cuadran entre sí.
 
-## Bundle contents
+Todo lo que lee la app pasa por `src/data/league.ts` (`DIR`, `season()`,
+`parseFcfUrl()`) y por la sincronización con la FCF de `src/store.tsx`. Para usar
+datos reales hay que cambiar eso por algo que lea fcf.cat y devuelva los mismos
+datos; las pantallas y los modelos de vista (`src/vm.ts`) no hay que tocarlos.
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Convocat: App de competiciones FCF` project files (HTML prototypes, assets, components)
+La sincronización simula dos cambios de horario en las primeras
+sincronizaciones (el primero a los pocos segundos de abrir la app), para que se
+vea cómo funciona el aviso de «Horario actualizado».
+
+## Ajustes (los Tweaks del diseño)
+
+Se cambian desde la dirección web:
+
+- `?fecha=diciembre` / `marzo` / `2027-01-20`: hace como si hoy fuera esa fecha (por defecto, la fecha real), para ver estadísticas con más jornadas jugadas.
+- `?calentamiento=30`: minutos antes del partido para calcular la hora de convocatoria (por defecto 45).
+- `?sync=0`: no sincroniza automáticamente al abrir.
+- `?pantalla=agenda`: pantalla de inicio (`home`, `agenda`, `explore`, `teams`, `notifs`).
+
+## Estructura
+
+```
+src/
+  data/util.ts      utilidades de fechas, texto y números aleatorios
+  data/seed.ts      listas semilla (pueblos, nombres, ligas) del diseño
+  data/league.ts    directorio, simulación de la temporada, clasificaciones, lectura de enlaces de fcf.cat
+  vm.ts             modelos de vista de cada pantalla (funciones puras)
+  store.tsx         estado, navegación e historial de «atrás», sincronización con la FCF, guardado
+  calendar.ts       exportación a .ics
+  screens/          un componente por pantalla
+  components/ui.tsx piezas compartidas (escudo, interruptor, pestañas, barra inferior, avisos)
+public/             manifest, service worker e iconos
+project/, chats/    el diseño original de Claude Design
+```
